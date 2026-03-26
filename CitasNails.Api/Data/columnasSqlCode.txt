@@ -1,0 +1,54 @@
+-- 1. Table Rol
+CREATE TABLE rol (
+    rol_id INT IDENTITY(1,1) PRIMARY KEY,
+    rol_name VARCHAR(50) NOT NULL,
+    rol_descripcion VARCHAR(255)
+);
+
+-- 2. Table User
+CREATE TABLE [user] (
+    usr_id INT IDENTITY(1,1) PRIMARY KEY,
+    rol_id INT NOT NULL,
+    usr_name VARCHAR(100) NOT NULL,
+    usr_phone VARCHAR(20),
+    usr_pass VARCHAR(255) NOT NULL,
+    CONSTRAINT FK_User_Rol FOREIGN KEY (rol_id) REFERENCES rol(rol_id)
+);
+
+-- 3. Table Customer
+CREATE TABLE customer (
+    cus_id INT IDENTITY(1,1) PRIMARY KEY,
+    cus_firstname VARCHAR(100) NOT NULL,
+    cus_lastname VARCHAR(100) NOT NULL,
+    cus_phone VARCHAR(20)
+);
+
+-- 4. Table Service
+CREATE TABLE [service] (
+    ser_id INT IDENTITY(1,1) PRIMARY KEY,
+    ser_name VARCHAR(100) NOT NULL,
+    ser_price DECIMAL(18,2) NOT NULL,
+    ser_duration INT NOT NULL -- Minutes
+);
+
+-- 5. Table Appointment
+CREATE TABLE appointment (
+    appoint_id INT IDENTITY(1,1) PRIMARY KEY,
+    appoint_datetime DATETIME NOT NULL,
+    appoint_status VARCHAR(50) DEFAULT 'Pending',
+    cus_id INT NOT NULL,
+    ser_id INT NOT NULL,
+    usr_id INT NOT NULL,
+    CONSTRAINT FK_Appoint_Customer FOREIGN KEY (cus_id) REFERENCES customer(cus_id),
+    CONSTRAINT FK_Appoint_Service FOREIGN KEY (ser_id) REFERENCES service(ser_id),
+    CONSTRAINT FK_Appoint_User FOREIGN KEY (usr_id) REFERENCES [user](usr_id)
+);
+
+-- 6. Table Payment
+CREATE TABLE payment (
+    pay_id INT IDENTITY(1,1) PRIMARY KEY,
+    appoint_id INT NOT NULL,
+    pay_amount DECIMAL(18,2) NOT NULL,
+    pay_date DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Payment_Appoint FOREIGN KEY (appoint_id) REFERENCES appointment(appoint_id)
+);
