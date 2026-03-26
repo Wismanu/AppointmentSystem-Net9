@@ -1,4 +1,4 @@
-using CitasNails.Api.Data;
+using NailsFlow.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 

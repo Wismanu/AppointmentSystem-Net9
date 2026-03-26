@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using CitasNails.Api.Models; 
+using NailsFlow.Api.Models; 
 
-namespace CitasNails.Api.Data;
+namespace NailsFlow.Api.Data;
 
 // Heredamos de DbContext (La clase padre de Entity Framework)
 public class ApplicationDbContext : DbContext

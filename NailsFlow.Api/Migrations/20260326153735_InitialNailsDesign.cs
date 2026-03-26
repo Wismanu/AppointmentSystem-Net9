@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace CitasNails.Api.Migrations
+namespace NailsFlow.Api.Migrations
 {
     /// <inheritdoc />
     public partial class InitialNailsDesign : Migration

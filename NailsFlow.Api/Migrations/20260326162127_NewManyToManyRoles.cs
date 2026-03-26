@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace CitasNails.Api.Migrations
+namespace NailsFlow.Api.Migrations
 {
     /// <inheritdoc />
     public partial class NewManyToManyRoles : Migration

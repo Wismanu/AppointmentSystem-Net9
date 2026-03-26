@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CitasNails.Api.Data;
-using CitasNails.Api.Models;
+using NailsFlow.Api.Data;
+using NailsFlow.Api.Models;
 
-namespace CitasNails.Api.Controllers;
+namespace NailsFlow.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

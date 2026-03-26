@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using CitasNails.Api.Data;    // <--- Verifica que esta sea tu carpeta de Data
-using CitasNails.Api.Models;  // <--- Verifica que esta sea tu carpeta de Models
+using NailsFlow.Api.Data;    // <--- Verifica que esta sea tu carpeta de Data
+using NailsFlow.Api.Models;  // <--- Verifica que esta sea tu carpeta de Models
 
-namespace CitasNails.Api.Controllers;
+namespace NailsFlow.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

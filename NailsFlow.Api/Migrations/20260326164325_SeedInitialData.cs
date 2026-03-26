@@ -4,7 +4,7 @@
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace CitasNails.Api.Migrations
+namespace NailsFlow.Api.Migrations
 {
     /// <inheritdoc />
     public partial class SeedInitialData : Migration

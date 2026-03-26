@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace CitasNails.Api.Models;
+namespace NailsFlow.Api.Models;
 
 [Table("payment")]
 public class Payment
