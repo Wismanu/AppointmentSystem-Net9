@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using NailsFlow.Api.Models; 
+using NailsFlow.Api.Models;
 
 namespace NailsFlow.Api.Data;
 
@@ -10,7 +10,6 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    // Esta línea le dice a SQL: "Crea una tabla llamada Servicios basada en mi clase Servicio"
     public DbSet<Rol> Roles { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Customer> Customers { get; set; }
@@ -20,7 +19,6 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserRole> UserRoles { get; set; }
     public DbSet<Promotion> Promotions { get; set; }
 
-    // AQUÍ AGREGAS EL CÓDIGO DEL SEED DATA
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -31,7 +29,7 @@ public class ApplicationDbContext : DbContext
             new Rol { RolId = 2, RolName = "Manicurista", RolDescripcion = "Gestión de citas y servicios" }
         );
 
-        // 2. Seed de Servicios (Tu lista de Ocaña)
+        // 2. Seed de Servicios 
         modelBuilder.Entity<Service>().HasData(
             new Service { SerId = 1, SerName = "Tradicional", SerPrice = 15000, SerDuration = 90 },
             new Service { SerId = 2, SerName = "Semipermanente", SerPrice = 25000, SerDuration = 90 },
@@ -39,6 +37,28 @@ public class ApplicationDbContext : DbContext
             new Service { SerId = 4, SerName = "Press On", SerPrice = 50000, SerDuration = 150 },
             new Service { SerId = 5, SerName = "Polygel", SerPrice = 65000, SerDuration = 180 }
         );
+
+        // 1. Proteger las Citas: No borrar citas si se elimina un Servicio
+        modelBuilder.Entity<Appointment>()
+            .HasOne(a => a.Service) 
+            .WithMany()
+            .HasForeignKey(a => a.SerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 2. Proteger las Citas: No borrar citas si se elimina un Cliente
+        modelBuilder.Entity<Appointment>()
+            .HasOne<Customer>() 
+            .WithMany()
+            .HasForeignKey(a => a.CusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // 3. Proteger las Promociones: No borrar promociones si se elimina un Servicio
+        modelBuilder.Entity<Promotion>()
+            .HasOne(p => p.TargetService)
+            .WithMany()
+            .HasForeignKey(p => p.TargetServiceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
     }
-    
+
 }

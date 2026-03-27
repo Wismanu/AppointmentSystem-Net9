@@ -1,46 +1,31 @@
-import { useEffect, useState } from 'react'
-import api from './api/api'
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import AdminLayout from './layouts/AdminLayout';
+import ServicesPage from './pages/ServicesPage'; // Asegúrate de haber movido tu código viejo aquí
+
+const Dashboard = () => (
+  <div className="animate-fade-in">
+    <h2 className="text-3xl font-bold text-gray-800">Bienvenido, Wisman 👋</h2>
+    <p className="text-gray-500 mt-2">Aquí verás el resumen de hoy en NailsFlow.</p>
+  </div>
+);
 
 function App() {
-  const [servicios, setServicios] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Función para traer los datos del API de .NET
-    const fetchServicios = async () => {
-      try {
-        const response = await api.get('/Service'); // Asegurar que el endpoint sea /api/Service
-        setServicios(response.data);
-      } catch (error) {
-        console.error("Error al conectar con el API:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchServicios();
-  }, []);
-
   return (
-    <div className="min-h-screen bg-pink-50 p-8 flex flex-col items-center">
-      <h1 className="text-4xl font-bold text-pink-600 mb-8">💅 NailsFlow Services</h1>
-      
-      {loading ? (
-        <p className="text-gray-500 animate-pulse">Cargando servicios desde Ocaña...</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-2xl">
-          {servicios.map((s) => (
-            <div key={s.serId} className="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-pink-400">
-              <h3 className="font-bold text-gray-800 text-lg">{s.serName}</h3>
-              <p className="text-pink-500 font-bold text-xl mt-2">
-                ${s.serPrice.toLocaleString('es-CO')}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        {/* Todas las rutas dentro de AdminLayout compartirán el Sidebar */}
+        <Route path="/" element={<AdminLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="servicios" element={<ServicesPage />} />
+          <Route path="citas" element={<div className="text-2xl font-bold">Módulo de Citas (Próximamente)</div>} />
+          <Route path="clientes" element={<div className="text-2xl font-bold text-gray-800">Módulo de Clientes (Próximamente)</div>} />
+          <Route path="promociones" element={<div className="text-2xl font-bold">Módulo de Promociones (Próximamente)</div>} />
+          <Route path="*" element={<div className="p-10 text-center text-red-500 font-bold">Error 404: Página no encontrada</div>} />
+          {/* Agregaremos más después */}
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

@@ -3,36 +3,107 @@ using Microsoft.EntityFrameworkCore;
 using NailsFlow.Api.Data;
 using NailsFlow.Api.Models;
 
-namespace NailsFlow.Api.Controllers;
-
-[Route("api/[controller]")]
-[ApiController]
-public class UserController : ControllerBase
+namespace NailsFlow.Api.Controllers
 {
-    private readonly ApplicationDbContext _context;
-
-    public UserController(ApplicationDbContext context)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UserController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    // 1. GET: api/user (Listar todos con sus roles)
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-    {
-        return await _context.Users
-            .Include(u => u.UserRoles) // Trae la tabla intermedia
-                .ThenInclude(ur => ur.Rol) // Trae el detalle del Rol
-            .ToListAsync();
-    }
+        public UserController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-    // 2. POST: api/user (Solo crea el usuario base)
-    [HttpPost]
-    public async Task<ActionResult<User>> CreateUser(User user)
-    {
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+        // GET: api/User
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        {
+            // Incluimos los roles asociados al usuario para saber si es Admin o Manicurista
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Rol)
+                .ToListAsync();
+        }
 
-        return CreatedAtAction(nameof(GetUsers), new { id = user.UsrId }, user);
+        // GET: api/User/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<User>> GetUser(int id)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Rol)
+                .FirstOrDefaultAsync(u => u.UsrId == id);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return user;
+        }
+
+        // POST: api/User
+        [HttpPost]
+        public async Task<ActionResult<User>> PostUser(User user)
+        {
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            // Usamos UsrId como lo definiste en tu modelo
+            return CreatedAtAction(nameof(GetUser), new { id = user.UsrId }, user);
+        }
+
+        // PUT: api/User/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutUser(int id, User user)
+        {
+            if (id != user.UsrId)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(user).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!UserExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // DELETE: api/User/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool UserExists(int id)
+        {
+            return _context.Users.Any(e => e.UsrId == id);
+        }
     }
 }

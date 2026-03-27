@@ -3,64 +3,94 @@ using Microsoft.EntityFrameworkCore;
 using NailsFlow.Api.Data;
 using NailsFlow.Api.Models;
 
-namespace NailsFlow.Api.Controllers;
-
-[Route("api/[controller]")]
-[ApiController]
-public class ServiceController : ControllerBase
+namespace NailsFlow.Api.Controllers
 {
-    private readonly ApplicationDbContext _context;
-
-    public ServiceController(ApplicationDbContext context)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ServiceController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    // 1. GET: api/service (Listar todos)
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Service>>> GetServices()
-    {
-        return await _context.Services.ToListAsync();
-    }
+        public ServiceController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
 
-    // 2. GET: api/service/5 (Buscar uno por ID)
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Service>> GetService(int id)
-    {
-        var service = await _context.Services.FindAsync(id);
-        if (service == null) return NotFound();
-        return service;
-    }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Service>>> GetServices()
+        {
+            return await _context.Services.ToListAsync();
+        }
 
-    // 3. PUT: api/service/5 (Actualizar - Cambiar precio o nombre)
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutService(int id, Service service)
-    {
-        if (id != service.SerId) return BadRequest();
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Service>> GetService(int id)
+        {
+            var service = await _context.Services.FindAsync(id);
 
-        _context.Entry(service).State = EntityState.Modified;
+            if (service == null)
+            {
+                return NotFound();
+            }
 
-        try {
+            return service;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Service>> PostService(Service service)
+        {
+            _context.Services.Add(service);
             await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException) {
-            if (!_context.Services.Any(e => e.SerId == id)) return NotFound();
-            else throw;
+
+            return CreatedAtAction(nameof(GetService), new { id = service.SerId }, service); // Usamos SerId 
         }
 
-        return NoContent();
-    }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutService(int id, Service service)
+        {
+            if (id != service.SerId) // Usamos SerId 
+            {
+                return BadRequest();
+            }
 
-    // 4. DELETE: api/service/5 (Borrar)
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteService(int id)
-    {
-        var service = await _context.Services.FindAsync(id);
-        if (service == null) return NotFound();
+            _context.Entry(service).State = EntityState.Modified;
 
-        _context.Services.Remove(service);
-        await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ServiceExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
 
-        return NoContent();
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteService(int id)
+        {
+            var service = await _context.Services.FindAsync(id);
+            if (service == null)
+            {
+                return NotFound();
+            }
+
+            _context.Services.Remove(service);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool ServiceExists(int id)
+        {
+            return _context.Services.Any(e => e.SerId == id); // Usamos SerId 
+        }
     }
 }

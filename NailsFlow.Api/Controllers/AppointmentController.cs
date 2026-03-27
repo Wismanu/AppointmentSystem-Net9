@@ -3,62 +3,109 @@ using Microsoft.EntityFrameworkCore;
 using NailsFlow.Api.Data;
 using NailsFlow.Api.Models;
 
-namespace NailsFlow.Api.Controllers;
-
-[Route("api/[controller]")]
-[ApiController]
-public class AppointmentController : ControllerBase
+namespace NailsFlow.Api.Controllers
 {
-    private readonly ApplicationDbContext _context;
-
-    public AppointmentController(ApplicationDbContext context)
+    [Route("api/[controller]")]
+    [ApiController]
+    public class AppointmentController : ControllerBase
     {
-        _context = context;
-    }
+        private readonly ApplicationDbContext _context;
 
-    // 1. GET: api/appointment (Listar citas con todo el detalle)
-    [HttpGet]
-    public async Task<ActionResult<IEnumerable<Appointment>>> GetAppointments()
-    {
-        return await _context.Appointments
-            .Include(a => a.Customer)
-            .Include(a => a.Service)
-            .Include(a => a.User)
-            .ToListAsync();
-    }
-
-    // 2. POST: api/appointment (Agendar una nueva cita)
-    [HttpPost]
-    public async Task<ActionResult<Appointment>> CreateAppointment(Appointment appointment)
-    {
-        // 1. Validar que el cliente, servicio y usuario existan antes de guardar
-        var clienteExiste = await _context.Customers.AnyAsync(c => c.CusId == appointment.CusId);
-        var servicioExiste = await _context.Services.AnyAsync(s => s.SerId == appointment.SerId);
-        var usuarioExiste = await _context.Users.AnyAsync(u => u.UsrId == appointment.UsrId);
-
-        // 2. Si alguno no existe, detenemos el proceso y avisamos al usuario
-        if (!clienteExiste || !servicioExiste || !usuarioExiste)
+        public AppointmentController(ApplicationDbContext context)
         {
-            return BadRequest("Uno de los IDs (Cliente, Servicio o Usuario) no existe en la base de datos.");
+            _context = context;
         }
 
-        // 3. Si todo está bien, guardamos
-        _context.Appointments.Add(appointment);
-        await _context.SaveChangesAsync();
+        // GET: api/Appointment
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Appointment>>> GetAppointments()
+        {
+            // Traemos las citas incluyendo TODOS los datos relacionados
+            return await _context.Appointments
+                .Include(a => a.Service)
+                .Include(a => a.Customer)
+                .Include(a => a.User) // Incluye a la manicurista asignada
+                .ToListAsync();
+        }
 
-        return CreatedAtAction(nameof(GetAppointments), new { id = appointment.AppointId }, appointment);
-    }
+        // GET: api/Appointment/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Appointment>> GetAppointment(int id)
+        {
+            var appointment = await _context.Appointments
+                .Include(a => a.Service)
+                .Include(a => a.Customer)
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.AppointId == id); // Usamos AppointId
 
+            if (appointment == null)
+            {
+                return NotFound();
+            }
 
-    // 3. PUT: api/appointment/5 (Actualizar estado: Completada, Cancelada, etc.)
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateStatus(int id, Appointment appointment)
-    {
-        if (id != appointment.AppointId) return BadRequest();
+            return appointment;
+        }
 
-        _context.Entry(appointment).State = EntityState.Modified;
-        await _context.SaveChangesAsync();
+        // POST: api/Appointment 
+        [HttpPost]
+        public async Task<ActionResult<Appointment>> PostAppointment(Appointment appointment)
+        {
+            _context.Appointments.Add(appointment);
+            await _context.SaveChangesAsync();
 
-        return NoContent();
+            // Usamos AppointId para devolver el registro recién creado
+            return CreatedAtAction(nameof(GetAppointment), new { id = appointment.AppointId }, appointment);
+        }
+
+        // PUT: api/Appointment/5 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutAppointment(int id, Appointment appointment)
+        {
+            if (id != appointment.AppointId) // Usamos AppointId
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(appointment).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AppointmentExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        // DELETE: api/Appointment/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAppointment(int id)
+        {
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            _context.Appointments.Remove(appointment);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool AppointmentExists(int id)
+        {
+            return _context.Appointments.Any(e => e.AppointId == id); // Usamos AppointId
+        }
     }
 }
