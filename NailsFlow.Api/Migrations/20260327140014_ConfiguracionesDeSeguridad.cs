@@ -11,7 +11,7 @@ namespace NailsFlow.Api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_appointment_customer_cus_id",
+                name: "FK_appointment_person_cus_id",
                 table: "appointment");
 
             migrationBuilder.DropForeignKey(
@@ -79,7 +79,7 @@ namespace NailsFlow.Api.Migrations
                 oldType: "nvarchar(max)");
 
             migrationBuilder.AddColumn<int>(
-                name: "CustomerCusId",
+                name: "personPerId",
                 table: "appointment",
                 type: "int",
                 nullable: true);
@@ -92,22 +92,22 @@ namespace NailsFlow.Api.Migrations
                 nullable: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_appointment_CustomerCusId",
+                name: "IX_appointment_personPerId",
                 table: "appointment",
-                column: "CustomerCusId");
+                column: "personPerId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_appointment_customer_CustomerCusId",
+                name: "FK_appointment_person_personPerId",
                 table: "appointment",
-                column: "CustomerCusId",
-                principalTable: "customer",
+                column: "personPerId",
+                principalTable: "person",
                 principalColumn: "cus_id");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_appointment_customer_cus_id",
+                name: "FK_appointment_person_cus_id",
                 table: "appointment",
                 column: "cus_id",
-                principalTable: "customer",
+                principalTable: "person",
                 principalColumn: "cus_id",
                 onDelete: ReferentialAction.Restrict);
 
@@ -132,11 +132,11 @@ namespace NailsFlow.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_appointment_customer_CustomerCusId",
+                name: "FK_appointment_person_personPerId",
                 table: "appointment");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_appointment_customer_cus_id",
+                name: "FK_appointment_person_cus_id",
                 table: "appointment");
 
             migrationBuilder.DropForeignKey(
@@ -148,11 +148,11 @@ namespace NailsFlow.Api.Migrations
                 table: "Promotions");
 
             migrationBuilder.DropIndex(
-                name: "IX_appointment_CustomerCusId",
+                name: "IX_appointment_personPerId",
                 table: "appointment");
 
             migrationBuilder.DropColumn(
-                name: "CustomerCusId",
+                name: "personPerId",
                 table: "appointment");
 
             migrationBuilder.DropColumn(
@@ -216,10 +216,10 @@ namespace NailsFlow.Api.Migrations
                 oldType: "int");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_appointment_customer_cus_id",
+                name: "FK_appointment_person_cus_id",
                 table: "appointment",
                 column: "cus_id",
-                principalTable: "customer",
+                principalTable: "person",
                 principalColumn: "cus_id",
                 onDelete: ReferentialAction.Cascade);
 

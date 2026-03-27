@@ -15,8 +15,8 @@ CREATE TABLE [user] (
     CONSTRAINT FK_User_Rol FOREIGN KEY (rol_id) REFERENCES rol(rol_id)
 );
 
--- 3. Table Customer
-CREATE TABLE customer (
+-- 3. Table person
+CREATE TABLE person (
     cus_id INT IDENTITY(1,1) PRIMARY KEY,
     cus_firstname VARCHAR(100) NOT NULL,
     cus_lastname VARCHAR(100) NOT NULL,
@@ -39,7 +39,7 @@ CREATE TABLE appointment (
     cus_id INT NOT NULL,
     ser_id INT NOT NULL,
     usr_id INT NOT NULL,
-    CONSTRAINT FK_Appoint_Customer FOREIGN KEY (cus_id) REFERENCES customer(cus_id),
+    CONSTRAINT FK_Appoint_person FOREIGN KEY (cus_id) REFERENCES person(cus_id),
     CONSTRAINT FK_Appoint_Service FOREIGN KEY (ser_id) REFERENCES service(ser_id),
     CONSTRAINT FK_Appoint_User FOREIGN KEY (usr_id) REFERENCES [user](usr_id)
 );

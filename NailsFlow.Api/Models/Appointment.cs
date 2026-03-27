@@ -20,8 +20,8 @@ public class Appointment
     [Column("appoint_voucherurl")]
     public string? PaymentVoucherUrl { get; set; }
 
-    [Column("cus_id")]
-    public int CusId { get; set; }
+    [Column("per_id")]
+    public int PerId { get; set; }
 
     [Column("ser_id")]
     public int SerId { get; set; }
@@ -30,8 +30,8 @@ public class Appointment
     public int UsrId { get; set; }
 
     // Propiedades de navegación (Relaciones del MER)
-    [ForeignKey("CusId")]
-    public Customer? Customer { get; set; }
+    [ForeignKey("PerId")]
+    public Person? person { get; set; }
 
     [ForeignKey("SerId")]
     public Service? Service { get; set; }

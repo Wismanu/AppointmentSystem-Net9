@@ -43,7 +43,7 @@ namespace NailsFlow.Api.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("appoint_status");
 
-                    b.Property<int>("CusId")
+                    b.Property<int>("PerId")
                         .HasColumnType("int")
                         .HasColumnName("cus_id");
 
@@ -57,7 +57,7 @@ namespace NailsFlow.Api.Migrations
 
                     b.HasKey("AppointId");
 
-                    b.HasIndex("CusId");
+                    b.HasIndex("PerId");
 
                     b.HasIndex("SerId");
 
@@ -66,14 +66,14 @@ namespace NailsFlow.Api.Migrations
                     b.ToTable("appointment");
                 });
 
-            modelBuilder.Entity("NailsFlow.Api.Models.Customer", b =>
+            modelBuilder.Entity("NailsFlow.Api.Models.person", b =>
                 {
-                    b.Property<int>("CusId")
+                    b.Property<int>("PerId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasColumnName("cus_id");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CusId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PerId"));
 
                     b.Property<string>("CusFirstName")
                         .IsRequired()
@@ -89,9 +89,9 @@ namespace NailsFlow.Api.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("cus_phone");
 
-                    b.HasKey("CusId");
+                    b.HasKey("PerId");
 
-                    b.ToTable("customer");
+                    b.ToTable("person");
                 });
 
             modelBuilder.Entity("NailsFlow.Api.Models.Payment", b =>
@@ -316,9 +316,9 @@ namespace NailsFlow.Api.Migrations
 
             modelBuilder.Entity("NailsFlow.Api.Models.Appointment", b =>
                 {
-                    b.HasOne("NailsFlow.Api.Models.Customer", "Customer")
+                    b.HasOne("NailsFlow.Api.Models.person", "person")
                         .WithMany()
-                        .HasForeignKey("CusId")
+                        .HasForeignKey("PerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -334,7 +334,7 @@ namespace NailsFlow.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Customer");
+                    b.Navigation("person");
 
                     b.Navigation("Service");
 

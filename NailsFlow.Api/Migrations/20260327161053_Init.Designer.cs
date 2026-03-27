@@ -12,8 +12,8 @@ using NailsFlow.Api.Data;
 namespace NailsFlow.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260326184104_UpdateSeedDataToNailsFlow")]
-    partial class UpdateSeedDataToNailsFlow
+    [Migration("20260327161053_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,18 +38,25 @@ namespace NailsFlow.Api.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("appoint_datetime");
 
-                    b.Property<string>("AppointStatus")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)")
-                        .HasColumnName("appoint_status");
-
                     b.Property<int>("PerId")
                         .HasColumnType("int")
                         .HasColumnName("cus_id");
 
+                    b.Property<int?>("personPerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PaymentVoucherUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("appoint_voucherurl");
+
                     b.Property<int>("SerId")
                         .HasColumnType("int")
                         .HasColumnName("ser_id");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int")
+                        .HasColumnName("appoint_status");
 
                     b.Property<int>("UsrId")
                         .HasColumnType("int")
@@ -58,6 +65,8 @@ namespace NailsFlow.Api.Migrations
                     b.HasKey("AppointId");
 
                     b.HasIndex("PerId");
+
+                    b.HasIndex("personPerId");
 
                     b.HasIndex("SerId");
 
@@ -122,6 +131,50 @@ namespace NailsFlow.Api.Migrations
                     b.ToTable("payment");
                 });
 
+            modelBuilder.Entity("NailsFlow.Api.Models.Promotion", b =>
+                {
+                    b.Property<int>("PromoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("prom_id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PromoId"));
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("prom_description");
+
+                    b.Property<int>("DiscountPercentage")
+                        .HasColumnType("int")
+                        .HasColumnName("prom_percentage");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("prom_name");
+
+                    b.Property<int>("RequiredVisits")
+                        .HasColumnType("int")
+                        .HasColumnName("prom_required_visits");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit")
+                        .HasColumnName("prom_status");
+
+                    b.Property<int>("TargetServiceId")
+                        .HasColumnType("int")
+                        .HasColumnName("ser_id");
+
+                    b.HasKey("PromoId");
+
+                    b.HasIndex("TargetServiceId");
+
+                    b.ToTable("Promotions");
+                });
+
             modelBuilder.Entity("NailsFlow.Api.Models.Rol", b =>
                 {
                     b.Property<int>("RolId")
@@ -156,6 +209,12 @@ namespace NailsFlow.Api.Migrations
                             RolId = 2,
                             RolDescripcion = "Gestión de citas y servicios",
                             RolName = "Manicurista"
+                        },
+                        new
+                        {
+                            RolId = 3,
+                            RolDescripcion = "Usuario cliente del salón",
+                            RolName = "Cliente"
                         });
                 });
 
@@ -249,6 +308,29 @@ namespace NailsFlow.Api.Migrations
                     b.HasKey("UsrId");
 
                     b.ToTable("user");
+
+                    b.HasData(
+                        new
+                        {
+                            UsrId = 1,
+                            UsrName = "admin",
+                            UsrPass = "$2a$11$ZRs1sRIszokJeM0AlFd4Eu.8rv5dfa1y0fktTnB41q/2oS562SHBa",
+                            UsrPhone = "3001234567"
+                        },
+                        new
+                        {
+                            UsrId = 2,
+                            UsrName = "manicurista",
+                            UsrPass = "$2a$11$Aw/dTcJ8RYQ7D9aRH8iqf.pT5yB9XW3cAmMOMcWoXGWX/vkJJZKbW",
+                            UsrPhone = "3001234568"
+                        },
+                        new
+                        {
+                            UsrId = 3,
+                            UsrName = "wisman",
+                            UsrPass = "$2a$11$tOfeJZAU4tUKoyv2hJGjeOKAwVCdtTMXW4urhYIXqpyaBhSQgYiSa",
+                            UsrPhone = "3001234569"
+                        });
                 });
 
             modelBuilder.Entity("NailsFlow.Api.Models.UserRole", b =>
@@ -275,20 +357,50 @@ namespace NailsFlow.Api.Migrations
                     b.HasIndex("UsrId");
 
                     b.ToTable("user_role");
+
+                    b.HasData(
+                        new
+                        {
+                            UrId = 1,
+                            RolId = 1,
+                            UsrId = 1
+                        },
+                        new
+                        {
+                            UrId = 2,
+                            RolId = 2,
+                            UsrId = 2
+                        },
+                        new
+                        {
+                            UrId = 3,
+                            RolId = 1,
+                            UsrId = 3
+                        },
+                        new
+                        {
+                            UrId = 4,
+                            RolId = 2,
+                            UsrId = 3
+                        });
                 });
 
             modelBuilder.Entity("NailsFlow.Api.Models.Appointment", b =>
                 {
-                    b.HasOne("NailsFlow.Api.Models.person", "person")
+                    b.HasOne("NailsFlow.Api.Models.person", null)
                         .WithMany()
                         .HasForeignKey("PerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("NailsFlow.Api.Models.person", "person")
+                        .WithMany()
+                        .HasForeignKey("personPerId");
 
                     b.HasOne("NailsFlow.Api.Models.Service", "Service")
                         .WithMany()
                         .HasForeignKey("SerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("NailsFlow.Api.Models.User", "User")
@@ -313,6 +425,17 @@ namespace NailsFlow.Api.Migrations
                         .IsRequired();
 
                     b.Navigation("Appointment");
+                });
+
+            modelBuilder.Entity("NailsFlow.Api.Models.Promotion", b =>
+                {
+                    b.HasOne("NailsFlow.Api.Models.Service", "TargetService")
+                        .WithMany()
+                        .HasForeignKey("TargetServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("TargetService");
                 });
 
             modelBuilder.Entity("NailsFlow.Api.Models.UserRole", b =>

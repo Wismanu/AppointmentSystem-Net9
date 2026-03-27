@@ -23,7 +23,7 @@ namespace NailsFlow.Api.Controllers
             // Traemos las citas incluyendo TODOS los datos relacionados
             return await _context.Appointments
                 .Include(a => a.Service)
-                .Include(a => a.Customer)
+                .Include(a => a.person)
                 .Include(a => a.User) // Incluye a la manicurista asignada
                 .ToListAsync();
         }
@@ -34,7 +34,7 @@ namespace NailsFlow.Api.Controllers
         {
             var appointment = await _context.Appointments
                 .Include(a => a.Service)
-                .Include(a => a.Customer)
+                .Include(a => a.person)
                 .Include(a => a.User)
                 .FirstOrDefaultAsync(a => a.AppointId == id); // Usamos AppointId
 

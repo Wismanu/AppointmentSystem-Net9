@@ -1,24 +1,30 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace NailsFlow.Api.Models;
-
-[Table("user")]
-public class User
+namespace NailsFlow.Api.Models
 {
-    [Key]
-    [Column("usr_id")]
-    public int UsrId { get; set; }
+    [Table("user")]
+    public class User
+    {
+        [Key]
+        [Column("usr_id")]
+        public int UsrId { get; set; }
 
-    [Column("usr_name")]
-    public string UsrName { get; set; } = string.Empty;
+        [Column("per_id")]
+        public int PerId { get; set; }
 
-    [Column("usr_phone")]
-    public string? UsrPhone { get; set; }
+        [Required]
+        [Column("usr_name")]
+        public string UsrName { get; set; } = string.Empty;
 
-    [Column("usr_pass")]
-    public string UsrPass { get; set; } = string.Empty;
+        [Required]
+        [Column("usr_pass")]
+        public string UsrPass { get; set; } = string.Empty;
 
-    // Relación N:N - Un usuario tiene muchos registros en la tabla intermedia
-    public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+        // Apunta al nuevo modelo Person
+        [ForeignKey("PerId")]
+        public Person? Person { get; set; }
+
+        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    }
 }

@@ -12,7 +12,7 @@ namespace NailsFlow.Api.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "customer",
+                name: "person",
                 columns: table => new
                 {
                     cus_id = table.Column<int>(type: "int", nullable: false)
@@ -23,7 +23,7 @@ namespace NailsFlow.Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_customer", x => x.cus_id);
+                    table.PrimaryKey("PK_person", x => x.cus_id);
                 });
 
             migrationBuilder.CreateTable(
@@ -93,9 +93,9 @@ namespace NailsFlow.Api.Migrations
                 {
                     table.PrimaryKey("PK_appointment", x => x.appoint_id);
                     table.ForeignKey(
-                        name: "FK_appointment_customer_cus_id",
+                        name: "FK_appointment_person_cus_id",
                         column: x => x.cus_id,
-                        principalTable: "customer",
+                        principalTable: "person",
                         principalColumn: "cus_id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
@@ -169,7 +169,7 @@ namespace NailsFlow.Api.Migrations
                 name: "appointment");
 
             migrationBuilder.DropTable(
-                name: "customer");
+                name: "person");
 
             migrationBuilder.DropTable(
                 name: "service");
