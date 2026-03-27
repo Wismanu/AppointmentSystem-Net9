@@ -18,6 +18,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Appointment> Appointments { get; set; }
     public DbSet<Payment> Payments { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
+    public DbSet<Promotion> Promotions { get; set; }
 
     // AQUÍ AGREGAS EL CÓDIGO DEL SEED DATA
     protected override void OnModelCreating(ModelBuilder modelBuilder)

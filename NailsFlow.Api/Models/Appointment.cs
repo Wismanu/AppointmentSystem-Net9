@@ -14,7 +14,11 @@ public class Appointment
     public DateTime AppointDateTime { get; set; }
 
     [Column("appoint_status")]
-    public string AppointStatus { get; set; } = "Pending";
+    public AppointmentStatus Status { get; set; } = AppointmentStatus.Requested;
+
+    [MaxLength(500)]        
+    [Column("appoint_voucherurl")]
+    public string? PaymentVoucherUrl { get; set; }
 
     [Column("cus_id")]
     public int CusId { get; set; }
