@@ -92,7 +92,7 @@ const Sidebar = ({ onClose }) => {
               }`
             }
           >
-            <span className={({ isActive }) => isActive ? 'text-white' : 'text-pink-400'}>
+            <span className={`${item.active ? 'text-pink-500' : ''} otras-clases`}>
               {item.icon}
             </span>
             <span>{item.name}</span>

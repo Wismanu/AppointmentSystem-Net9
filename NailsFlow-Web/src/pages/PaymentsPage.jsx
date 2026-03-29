@@ -80,12 +80,12 @@ const PaymentsPage = () => {
   const getAppointmentInfo = (appointId) => {
     const appointment = appointments.find(a => a.appointId === appointId);
     if (!appointment) return { customer: 'No encontrado', service: 'No encontrado' };
-    
-    const customer = appointment.customer ? 
-      `${appointment.customer.cusFirstName} ${appointment.customer.cusLastName}` : 
+
+    const customer = appointment.person ?
+      `${appointment.person.perFirstName} ${appointment.person.perLastName}` :
       'Cliente no disponible';
     const service = appointment.service?.serName || 'Servicio no disponible';
-    
+
     return { customer, service };
   };
 
@@ -266,7 +266,7 @@ const PaymentsPage = () => {
                   <option value="">Seleccionar cita</option>
                   {appointments.map(apt => (
                     <option key={apt.appointId} value={apt.appointId}>
-                      #{apt.appointId} - {apt.customer?.cusFirstName} {apt.customer?.cusLastName} - {apt.service?.serName}
+                      #{apt.appointId} - {apt.person?.perFirstName} {apt.person?.perLastName} - {apt.service?.serName}
                     </option>
                   ))}
                 </select>

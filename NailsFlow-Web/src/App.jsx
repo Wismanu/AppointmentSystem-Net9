@@ -65,7 +65,7 @@ const Dashboard = () => {
   return (
     <div className="animate-fade-in">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-800">Bienvenido{user ? `, ${user.name}` : ''} 👋</h2>
+        <h2 className="text-3xl font-bold text-gray-800">Bienvenido{user ? `, ${user.username}` : ''} 👋</h2>
         <p className="text-gray-500 mt-1">Aquí está el resumen de tu salón hoy.</p>
       </div>
 

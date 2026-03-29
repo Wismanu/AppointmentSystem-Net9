@@ -1,23 +1,32 @@
-import { useEffect, useState } from 'react';
-import { appointmentApi, serviceApi, customerApi } from '../api/api';
+import { useEffect, useState, useRef } from 'react';
+import { appointmentApi, serviceApi, customerApi, statusApi } from '../api/api';
 
 const statusColors = {
-  Requested: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Solicitada' },
-  Confirmed: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Confirmada' },
-  Completed: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completada' },
-  Cancelled: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelada' }
+  Requested: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
+  PendingAdvancePayment: { bg: 'bg-orange-100', text: 'text-orange-700' },
+  AdvancePaymentConfirmed: { bg: 'bg-amber-100', text: 'text-amber-700' },
+  Assigned: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  Rescheduled: { bg: 'bg-indigo-100', text: 'text-indigo-700' },
+  InProgress: { bg: 'bg-purple-100', text: 'text-purple-700' },
+  CompletedPendingPayment: { bg: 'bg-teal-100', text: 'text-teal-700' },
+  CompletedAndConfirmed: { bg: 'bg-green-100', text: 'text-green-700' },
+  Cancelled: { bg: 'bg-red-100', text: 'text-red-700' }
 };
 
 const AppointmentsPage = () => {
+  const timeInputRef = useRef(null); // Aquí declaramos la referencia
+  
   const [appointments, setAppointments] = useState([]);
   const [services, setServices] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [statuses, setStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [formData, setFormData] = useState({
-    appointDateTime: '',
-    cusId: '',
+    appointDate: '',
+    appointTime: '',
+    perId: '',
     serId: '',
     usrId: 1,
     status: 'Requested'
@@ -25,14 +34,16 @@ const AppointmentsPage = () => {
 
   const fetchData = async () => {
     try {
-      const [appointmentsRes, servicesRes, customersRes] = await Promise.all([
+      const [appointmentsRes, servicesRes, customersRes, statusesRes] = await Promise.all([
         appointmentApi.getAll(),
         serviceApi.getAll(),
-        customerApi.getAll()
+        customerApi.getAll(),
+        statusApi.getAll()
       ]);
       setAppointments(appointmentsRes.data);
       setServices(servicesRes.data);
       setCustomers(customersRes.data);
+      setStatuses(statusesRes.data);
     } catch (error) {
       console.error('Error al cargar datos:', error);
     } finally {
@@ -47,9 +58,10 @@ const AppointmentsPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const appointDateTime = `${formData.appointDate}T${formData.appointTime}:00`;
       const data = {
-        appointDateTime: formData.appointDateTime,
-        cusId: parseInt(formData.cusId),
+        appointDateTime,
+        perId: parseInt(formData.perId),
         serId: parseInt(formData.serId),
         usrId: parseInt(formData.usrId),
         status: formData.status
@@ -60,10 +72,10 @@ const AppointmentsPage = () => {
       } else {
         await appointmentApi.create(data);
       }
-      
+
       setShowModal(false);
       setEditingAppointment(null);
-      setFormData({ appointDateTime: '', cusId: '', serId: '', usrId: 1, status: 'Requested' });
+      setFormData({ appointDate: '', appointTime: '', perId: '', serId: '', usrId: 1, status: 'Requested' });
       fetchData();
     } catch (error) {
       console.error('Error al guardar:', error);
@@ -72,9 +84,11 @@ const AppointmentsPage = () => {
 
   const handleEdit = (appointment) => {
     setEditingAppointment(appointment);
+    const dateTime = appointment.appointDateTime ? new Date(appointment.appointDateTime) : null;
     setFormData({
-      appointDateTime: appointment.appointDateTime ? appointment.appointDateTime.slice(0, 16) : '',
-      cusId: appointment.cusId?.toString() || '',
+      appointDate: dateTime ? dateTime.toISOString().split('T')[0] : '',
+      appointTime: dateTime ? dateTime.toTimeString().slice(0, 5) : '',
+      perId: appointment.perId?.toString() || '',
       serId: appointment.serId?.toString() || '',
       usrId: appointment.usrId?.toString() || '1',
       status: appointment.status || 'Requested'
@@ -95,16 +109,18 @@ const AppointmentsPage = () => {
 
   const getStatusBadge = (status) => {
     const colors = statusColors[status] || statusColors.Requested;
+    const statusInfo = statuses.find(s => s.name === status);
+    const label = statusInfo?.label || status;
     return (
       <span className={`px-3 py-1 rounded-full text-xs font-bold ${colors.bg} ${colors.text}`}>
-        {colors.label}
+        {label}
       </span>
     );
   };
 
-  const getCustomerName = (cusId) => {
-    const customer = customers.find(c => c.cusId === cusId);
-    return customer ? `${customer.cusFirstName} ${customer.cusLastName}` : 'Cliente no encontrado';
+  const getCustomerName = (perId) => {
+    const customer = customers.find(c => c.perId === perId);
+    return customer ? `${customer.perFirstName} ${customer.perLastName}` : 'Cliente no encontrado';
   };
 
   const getServiceName = (serId) => {
@@ -124,8 +140,8 @@ const AppointmentsPage = () => {
           <h2 className="text-3xl font-bold text-gray-800">Citas</h2>
           <p className="text-gray-500 mt-1">Gestiona las citas del salón.</p>
         </div>
-        <button 
-          onClick={() => { setShowModal(true); setEditingAppointment(null); setFormData({ appointDateTime: '', cusId: '', serId: '', usrId: 1, status: 'Requested' }); }}
+        <button
+          onClick={() => { setShowModal(true); setEditingAppointment(null); setFormData({ appointDate: '', appointTime: '', perId: '', serId: '', usrId: 1, status: 'Requested' }); }}
           className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-pink/20 flex items-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,7 +201,7 @@ const AppointmentsPage = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-400">Cliente</p>
-                    <p className="font-semibold text-gray-800">{getCustomerName(appointment.cusId)}</p>
+                    <p className="font-semibold text-gray-800">{getCustomerName(appointment.perId)}</p>
                   </div>
                 </div>
 
@@ -242,37 +258,77 @@ const AppointmentsPage = () => {
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha y Hora</label>
-                <input
-                  type="datetime-local"
-                  value={formData.appointDateTime}
-                  onChange={(e) => setFormData({...formData, appointDateTime: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="appointDate" className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+                  <input
+                    type="date"
+                    id="appointDate"
+                    name="appointDate"
+                    value={formData.appointDate}
+                    onChange={(e) => setFormData({...formData, appointDate: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
+                    required
+                  />
+                </div>
+                
+                {/* AQUI ESTA LA MAGIA DEL RELOJ CON SU REFERENCIA */}
+                <div>
+                  <label htmlFor="appointTime" className="block text-sm font-medium text-gray-700 mb-1">Hora</label>
+                  <div className="relative">
+                    <input
+                      type="time"
+                      id="appointTime"
+                      name="appointTime"
+                      ref={timeInputRef} /* AQUI USAMOS EL REF */
+                      value={formData.appointTime}
+                      onChange={(e) => setFormData({...formData, appointTime: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all [&::-webkit-calendar-picker-indicator]:hidden"
+                      required
+                    />
+                    
+                    <div 
+                      className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-400 hover:text-pink-500 transition-colors"
+                      onClick={() => {
+                        if (timeInputRef.current?.showPicker) {
+                          timeInputRef.current.showPicker();
+                        } else {
+                          timeInputRef.current?.focus(); 
+                        }
+                      }}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                <label htmlFor="perId" className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
                 <select
-                  value={formData.cusId}
-                  onChange={(e) => setFormData({...formData, cusId: e.target.value})}
+                  id="perId"
+                  name="perId"
+                  value={formData.perId}
+                  onChange={(e) => setFormData({...formData, perId: e.target.value})}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
                   required
                 >
                   <option value="">Seleccionar cliente</option>
                   {customers.map(customer => (
-                    <option key={customer.cusId} value={customer.cusId}>
-                      {customer.cusFirstName} {customer.cusLastName}
+                    <option key={customer.perId} value={customer.perId}>
+                      {customer.perFirstName} {customer.perLastName}
                     </option>
                   ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Servicio</label>
+                <label htmlFor="serId" className="block text-sm font-medium text-gray-700 mb-1">Servicio</label>
                 <select
+                  id="serId"
+                  name="serId"
                   value={formData.serId}
                   onChange={(e) => setFormData({...formData, serId: e.target.value})}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
@@ -288,16 +344,19 @@ const AppointmentsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                 <select
+                  id="status"
+                  name="status"
                   value={formData.status}
                   onChange={(e) => setFormData({...formData, status: e.target.value})}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
                 >
-                  <option value="Requested">Solicitada</option>
-                  <option value="Confirmed">Confirmada</option>
-                  <option value="Completed">Completada</option>
-                  <option value="Cancelled">Cancelada</option>
+                  {statuses.map(status => (
+                    <option key={status.name} value={status.name}>
+                      {status.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 

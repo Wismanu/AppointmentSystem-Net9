@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NailsFlow.Api.Data;
 
@@ -11,9 +12,11 @@ using NailsFlow.Api.Data;
 namespace NailsFlow.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260329195414_AddPromotionController")]
+    partial class AddPromotionController
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -381,21 +384,21 @@ namespace NailsFlow.Api.Migrations
                             UsrId = 1,
                             PerId = 1,
                             UsrName = "admin",
-                            UsrPass = "$2a$11$COy0nIJzX0O4OxAW9Zr9he6S355.9REqRmcJSG.tovCa6k/xe7Pre"
+                            UsrPass = "$2a$11$7hiKCHyU8DJKJeb7iPABL.56m944F0k3ReJ5qS.fRVs4nivNfogjy"
                         },
                         new
                         {
                             UsrId = 2,
                             PerId = 2,
                             UsrName = "manicurista",
-                            UsrPass = "$2a$11$lKkdaPVOuraQXsEXQSESbO3QmHmjpYklgK2eV253kU97MUBkvyvxy"
+                            UsrPass = "$2a$11$haoC08Dwav1amdW1b1UAt.ECLGjx0D6X6AfFTMpT/e79yDvACbmkS"
                         },
                         new
                         {
                             UsrId = 3,
                             PerId = 3,
                             UsrName = "wisman",
-                            UsrPass = "$2a$11$2c.t/neLu2m7fz8mB6S.0OlU7T1v2V9C62aaSEhNpwQQuOzvY0jjC"
+                            UsrPass = "$2a$11$K/5CDctRK8aWgfVGLiWUyeyE5XKdBWMtcCX4S2T8jkgkEoWGejlIq"
                         });
                 });
 

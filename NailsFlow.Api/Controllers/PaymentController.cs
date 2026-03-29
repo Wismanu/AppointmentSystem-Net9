@@ -21,7 +21,10 @@ namespace NailsFlow.Api.Controllers
         public async Task<ActionResult<IEnumerable<Payment>>> GetPayments()
         {
             return await _context.Payments
-                .Include(p => p.Appointment) // Traemos la info de la cita pagada
+                .Include(p => p.Appointment)
+                    .ThenInclude(a => a!.Person)
+                .Include(p => p.Appointment)
+                    .ThenInclude(a => a!.Service)
                 .ToListAsync();
         }
 
@@ -31,7 +34,10 @@ namespace NailsFlow.Api.Controllers
         {
             var payment = await _context.Payments
                 .Include(p => p.Appointment)
-                .FirstOrDefaultAsync(p => p.PayId == id); // Usamos PayId [cite: 20]
+                    .ThenInclude(a => a!.Person)
+                .Include(p => p.Appointment)
+                    .ThenInclude(a => a!.Service)
+                .FirstOrDefaultAsync(p => p.PayId == id);
 
             if (payment == null)
             {

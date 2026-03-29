@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NailsFlow.Api.Data;
 
@@ -11,9 +12,11 @@ using NailsFlow.Api.Data;
 namespace NailsFlow.Api.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260329194612_AddCustomersAndStatus")]
+    partial class AddCustomersAndStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -381,21 +384,21 @@ namespace NailsFlow.Api.Migrations
                             UsrId = 1,
                             PerId = 1,
                             UsrName = "admin",
-                            UsrPass = "$2a$11$COy0nIJzX0O4OxAW9Zr9he6S355.9REqRmcJSG.tovCa6k/xe7Pre"
+                            UsrPass = "$2a$11$R9yCHdb4f4KJECmHGJfDS.4tfNAFN7ps7SXqIu26lkyTI2c/DE7Iq"
                         },
                         new
                         {
                             UsrId = 2,
                             PerId = 2,
                             UsrName = "manicurista",
-                            UsrPass = "$2a$11$lKkdaPVOuraQXsEXQSESbO3QmHmjpYklgK2eV253kU97MUBkvyvxy"
+                            UsrPass = "$2a$11$kUPZe7iVoyc/U/NXQJ7IyeoLWNO/jwI7PH35yrIvgMmBBw6ZJaamy"
                         },
                         new
                         {
                             UsrId = 3,
                             PerId = 3,
                             UsrName = "wisman",
-                            UsrPass = "$2a$11$2c.t/neLu2m7fz8mB6S.0OlU7T1v2V9C62aaSEhNpwQQuOzvY0jjC"
+                            UsrPass = "$2a$11$Ygga1dx/i6.Vk6AsRiyKSOvK7HEMVY48ZiUyXLXUbEmOUz2OzJtAO"
                         });
                 });
 

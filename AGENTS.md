@@ -2,46 +2,32 @@
 
 ## Project Overview
 
-NailsFlow is an appointment management system for nail salons consisting of:
-- **Backend**: NailsFlow.Api - .NET 9 Web API with Entity Framework Core + SQL Server
+NailsFlow is an appointment management system for nail salons:
+- **Backend**: NailsFlow.Api - .NET 9 Web API + Entity Framework Core + SQL Server
 - **Frontend**: NailsFlow-Web - React 19 + Vite + Tailwind CSS + JWT Authentication
 
 ## Build Commands
 
 ### Backend (.NET)
-
 ```bash
-# Build the solution
+# Build solution / specific project
 dotnet build
-
-# Build specific project
 dotnet build NailsFlow.Api/NailsFlow.Api.csproj
 
-# Run the API (requires SQL Server connection)
-dotnet run --project NailsFlow.Api
-
-# Run with development environment
+# Run API (port 5005)
 dotnet run --project NailsFlow.Api --environment Development
 
-# Run a single test
-dotnet test --filter "FullyQualifiedName~TestClassName.MethodName"
+# Run tests (no test project currently)
+dotnet test
+dotnet test --filter "FullyQualifiedName~Namespace.ClassName.MethodName"
 
-# Create migration
-dotnet ef migrations add MigrationName
-
-# Apply migrations
-dotnet ef database update
-
-# Drop and recreate database
-dotnet ef database drop --force
-dotnet ef database update
-
-# List pending migrations
-dotnet ef migrations list
+# EF Core migrations
+dotnet ef migrations add MigrationName --project NailsFlow.Api
+dotnet ef database update --project NailsFlow.Api
+dotnet ef migrations list --project NailsFlow.Api
 ```
 
 ### Frontend (React)
-
 ```bash
 # Install dependencies
 cd NailsFlow-Web && npm install
@@ -55,153 +41,161 @@ npm run build
 # Lint code
 npm run lint
 
-# Preview production build
-npm run preview
-
-# Run a single ESLint file
+# Run single ESLint file
 npx eslint src/App.jsx
 ```
 
 ## Project Structure
-
 ```
 AppointmentSystem-Net9/
 ├── SistemaCitasNails.sln
 ├── NailsFlow.Api/
-│   ├── Controllers/       # API endpoints (Auth, Service, Customer, Appointment, Payment, Promotion, User, Rol)
-│   ├── Models/           # Entity models
-│   ├── Data/             # DbContext
-│   ├── Migrations/       # EF Core migrations
-│   └── Program.cs
+│   ├── Controllers/
+│   │   ├── AuthController.cs          # Login, Register, Me
+│   │   ├── PersonController.cs        # Customers with roles (PersonWithRoleDto)
+│   │   ├── AppointmentController.cs   # Appointments with .Include()
+│   │   ├── ServiceController.cs       # Services CRUD
+│   │   ├── PaymentController.cs       # Payments with Appointment info
+│   │   ├── PromotionController.cs     # Promotions with Service
+│   │   ├── AppointmentStatusController.cs # Enum values endpoint
+│   │   ├── UserController.cs
+│   │   ├── UserRoleController.cs
+│   │   └── RolController.cs
+│   ├── Models/
+│   │   ├── Person.cs + PersonWithRoleDto
+│   │   ├── Appointment.cs + AppointmentStatus enum
+│   │   ├── Service.cs
+│   │   ├── Payment.cs
+│   │   ├── Promotion.cs
+│   │   ├── User.cs + UserRole.cs
+│   │   └── Rol.cs
+│   ├── Data/ApplicationDbContext.cs
+│   └── Migrations/
 └── NailsFlow-Web/
-    ├── src/
-    │   ├── api/          # Axios API client
-    │   ├── components/   # Sidebar, ProtectedRoute
-    │   ├── context/      # AuthContext
-    │   ├── layouts/      # AdminLayout
-    │   ├── pages/        # Login, Register, Services, Customers, Appointments, Promotions, Payments
-    │   ├── App.jsx
-    │   └── main.jsx
-    └── package.json
+    └── src/
+        ├── api/api.js                 # Axios client (baseURL:5005)
+        ├── components/                # ProtectedRoute, Sidebar
+        ├── context/AuthContext.jsx     # JWT auth state
+        ├── layouts/AdminLayout.jsx
+        └── pages/
+            ├── LoginPage.jsx
+            ├── RegisterPage.jsx
+            ├── AppointmentsPage.jsx    # Dynamic dropdowns
+            ├── CustomersPage.jsx       # Person with roles
+            ├── ServicesPage.jsx
+            ├── PromotionsPage.jsx
+            └── PaymentsPage.jsx
 ```
 
 ## Authentication
 
-The system uses JWT authentication:
-- **Login**: `POST /api/Auth/login` - Returns token and user data
-- **Register**: `POST /api/Auth/register` - Registers new client users
-- **Me**: `GET /api/Auth/me` - Get current user (requires auth)
+- **Login**: `POST /api/Auth/login`
+- **Register**: `POST /api/Auth/register`
+- **Me**: `GET /api/Auth/me`
 
 ### Test Users
-| Username | Password | Role(s) |
-|----------|----------|---------|
+| Username | Password | Role |
+|----------|----------|------|
 | admin | admin123 | Administrador |
 | manicurista | manicura123 | Manicurista |
 | wisman | wisman123 | Administrador + Manicurista |
 
-## Code Style Guidelines
+## C# Backend Conventions
 
-### C# Backend
+### Naming
+- Classes/Methods/Properties: PascalCase (`AppointmentController`, `GetAppointments`)
+- Private fields: PascalCase with underscore (`_context`)
+- Parameters/Local variables: camelCase (`appointmentId`)
+- Interfaces: Prefix with `I` (`IApplicationDbContext`)
 
-#### Naming Conventions
-- **Classes/Methods/Properties**: PascalCase (`AppointmentController`, `GetAppointments`)
-- **Private fields**: PascalCase with underscore (`_context`, `_dbContext`)
-- **Parameters/Local variables**: camelCase (`appointmentId`, `customerName`)
-- **Interfaces**: Start with `I` (`IApplicationDbContext`)
-- **Constants**: PascalCase (`MaxRetryCount`)
-
-#### Imports
+### Imports
 ```csharp
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NailsFlow.Api.Data;
 using NailsFlow.Api.Models;
 ```
 
-#### Types
-- Enable nullable reference types (`<Nullable>enable</Nullable>`)
-- Use `string?` for nullable strings
-- Use `ActionResult<T>` for controller return types
-- Use async/await for all database operations
+### Types & Patterns
+- Nullable reference types enabled (`<Nullable>enable</Nullable>`)
+- Return `ActionResult<T>` from controllers
+- Always use async/await for database operations
+- Controllers inherit from `ControllerBase`
+- Use DTOs for complex responses (e.g., `PersonWithRoleDto`)
 
-#### Error Handling
-- Return `NotFound()` for 404 responses
-- Return `BadRequest()` for 400 responses
-- Use try-catch with `DbUpdateConcurrencyException` handling
+### Error Handling
+- Return `NotFound()` for 404
+- Return `BadRequest()` for 400
+- Wrap `SaveChangesAsync` in try-catch with `DbUpdateConcurrencyException`
 
-#### Entity Framework
+### API Controller Pattern
+```csharp
+[Route("api/[controller]")]
+[ApiController]
+public class ExampleController : ControllerBase
+{
+    private readonly ApplicationDbContext _context;
+    public ExampleController(ApplicationDbContext context) => _context = context;
+}
+```
+
+### Entity Framework
 - Use `[Column("name")]` for explicit column mapping
+- Use `.Include()` and `.ThenInclude()` for related data
 - Use `[ForeignKey("Id")]` for navigation properties
-- Always use `.Include()` for related data in GET endpoints
-- Use `async` database operations with `await`
 
-#### API Controllers
-- Use `[Route("api/[controller]")]`
-- Inherit from `ControllerBase`
-- Use `[HttpGet]`, `[HttpPost]`, `[HttpPut]`, `[HttpDelete]`
-- Add `[Authorize]` attribute for protected routes
+## React Frontend Conventions
 
-### React Frontend
+### Naming
+- Components/Files: PascalCase (`AdminLayout`, `ServicesPage.jsx`)
+- Hooks: camelCase starting with `use` (`useState`, `useEffect`)
+- Constants: SCREAMING_SNAKE_CASE
 
-#### Naming Conventions
-- **Components**: PascalCase (`AdminLayout`, `ServicesPage`)
-- **Files**: PascalCase with `.jsx` extension
-- **Hooks**: camelCase starting with `use` (`useState`, `useEffect`)
-- **Constants**: SCREAMING_SNAKE_CASE
-
-#### Imports
+### Imports
 ```jsx
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from './context/AuthContext';
 ```
 
-#### Component Structure
-- Functional components with arrow functions or `function`
-- Use React 19 patterns with hooks
+### Component Structure
+- Functional components with arrow functions
 - Destructure props for cleaner code
-- Keep components focused and single-purpose
+- Keep components single-purpose
 
-#### Styling
-- Use Tailwind CSS utility classes
-- Feminine color palette: pinks (#F8B4C4), purples (#E1BEE7)
-- Responsive design: `md:`, `lg:` prefixes
-- Use flex/grid for layout
+### Styling
+- Tailwind CSS utility classes
+- Color palette: pinks, purples
+- Responsive: `md:`, `lg:` prefixes
+- Flex/grid for layout
 
-#### State Management
-- Use `useState` for local component state
-- Use `useEffect` for side effects
-- Use `AuthContext` for global auth state
-
-#### API Integration
-- Use axios configured in `src/api/api.js`
-- Include JWT token automatically via interceptors
+### State & API
+- `useState` for local state, `useEffect` for side effects
+- `AuthContext` for global auth state
+- Axios configured in `src/api/api.js` (baseURL: `http://localhost:5005/api`)
+- JWT token included via interceptors
 - Handle loading and error states
 
-## Database
+## Key Endpoints
 
-- **Provider**: SQL Server
-- **ORM**: Entity Framework Core (Code First)
-- **Connection**: `appsettings.json` - `"DefaultConnection"`
-- **Migrations**: `NailsFlow.Api/Migrations/`
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/Auth/login` | POST | Login, returns JWT token |
+| `/api/Person` | GET | Returns persons with roles (PersonWithRoleDto) |
+| `/api/Appointment` | GET | Returns appointments with Person, Service, User |
+| `/api/Service` | GET | Returns all services |
+| `/api/Payment` | GET | Returns payments with Appointment data |
+| `/api/Promotion` | GET | Returns promotions with TargetService |
+| `/api/AppointmentStatus` | GET | Returns enum values with labels |
 
-## Configuration Files
+## AppointmentStatus Enum Values
+`Requested`, `PendingAdvancePayment`, `AdvancePaymentConfirmed`, `Assigned`, `Rescheduled`, `InProgress`, `CompletedPendingPayment`, `CompletedAndConfirmed`, `Cancelled`
 
-- **Backend**: `NailsFlow.Api/appsettings.json`, `appsettings.Development.json`
+## Configuration
+
+- **Backend**: `NailsFlow.Api/appsettings.json`
 - **Frontend**: `NailsFlow-Web/vite.config.js`, `eslint.config.js`
-- **Solution**: `SistemaCitasNails.sln`
-
-## Testing
-
-- Backend: `dotnet test` (xUnit/NUnit if configured)
-- Frontend: `npm run lint`
-
-## Notes
-
-- API: `http://localhost:5000`
-- Frontend: `http://localhost:5173`
-- CORS allows `http://localhost:5173` only
-- Swagger: `/swagger` (Development mode)
-- Protected routes redirect to `/login`
-- Token stored in localStorage
+- **API URL**: `http://localhost:5005`
+- **Frontend URL**: `http://localhost:5173`
+- **Swagger**: `/swagger` (Development mode)
+- **Token**: stored in localStorage

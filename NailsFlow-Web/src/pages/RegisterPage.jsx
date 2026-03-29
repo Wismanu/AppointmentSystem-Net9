@@ -39,18 +39,22 @@ const RegisterPage = () => {
         phone: formData.usrPhone
       });
 
-      // Mostramos el mensaje verde
       setSuccess('¡Cuenta creada exitosamente! Redirigiendo...');
 
-      // Esperamos 2 segundos (2000 ms) antes de cambiar de página
       setTimeout(() => {
         navigate('/login', { state: { message: 'Cuenta creada exitosamente. ¡Inicia sesión!' } });
       }, 2000);
 
     } catch (err) {
-      setError(err.response?.data?.message || 'Error al registrar usuario');
-      setLoading(false); // Solo quitamos el loading si hay error
+      const errorMessage = err.response?.data?.message || 'Error al registrar usuario';
+      setError(errorMessage);
+      setLoading(false);
     }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   return (
@@ -86,11 +90,14 @@ const RegisterPage = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
+              <label htmlFor="usrName" className="block text-sm font-medium text-gray-700 mb-2">Usuario</label>
               <input
                 type="text"
+                id="usrName"
+                name="usrName"
                 value={formData.usrName}
-                onChange={(e) => setFormData({ ...formData, usrName: e.target.value })}
+                onChange={handleChange}
+                autoComplete="username"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all bg-white/50"
                 placeholder="Elige un usuario"
                 required
@@ -98,22 +105,28 @@ const RegisterPage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono (opcional)</label>
+              <label htmlFor="usrPhone" className="block text-sm font-medium text-gray-700 mb-2">Teléfono (opcional)</label>
               <input
                 type="tel"
+                id="usrPhone"
+                name="usrPhone"
                 value={formData.usrPhone}
-                onChange={(e) => setFormData({ ...formData, usrPhone: e.target.value })}
+                onChange={handleChange}
+                autoComplete="tel"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all bg-white/50"
                 placeholder="300 123 4567"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
+              <label htmlFor="usrPass" className="block text-sm font-medium text-gray-700 mb-2">Contraseña</label>
               <input
                 type="password"
+                id="usrPass"
+                name="usrPass"
                 value={formData.usrPass}
-                onChange={(e) => setFormData({ ...formData, usrPass: e.target.value })}
+                onChange={handleChange}
+                autoComplete="new-password"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all bg-white/50"
                 placeholder="••••••••"
                 required
@@ -121,11 +134,14 @@ const RegisterPage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirmar Contraseña</label>
+              <label htmlFor="usrPassConfirm" className="block text-sm font-medium text-gray-700 mb-2">Confirmar Contraseña</label>
               <input
                 type="password"
+                id="usrPassConfirm"
+                name="usrPassConfirm"
                 value={formData.usrPassConfirm}
-                onChange={(e) => setFormData({ ...formData, usrPassConfirm: e.target.value })}
+                onChange={handleChange}
+                autoComplete="new-password"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all bg-white/50"
                 placeholder="••••••••"
                 required

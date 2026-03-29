@@ -18,33 +18,44 @@ namespace NailsFlow.Api.Controllers
 
         // GET: api/person
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Person>>> GetPersons()
+        public async Task<ActionResult<IEnumerable<PersonWithRoleDto>>> GetPersons()
         {
-            return await _context.Persons.ToListAsync();
+            var persons = await _context.Persons
+                .Include(p => p.User)
+                    .ThenInclude(u => u!.UserRoles)
+                    .ThenInclude(ur => ur.Rol)
+                .ToListAsync();
+
+            var result = persons.Select(p => MapToDto(p)).ToList();
+            return Ok(result);
         }
 
         // GET: api/person/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Person>> GetPerson(int id)
+        public async Task<ActionResult<PersonWithRoleDto>> GetPerson(int id)
         {
-            var person = await _context.Persons.FindAsync(id);
+            var person = await _context.Persons
+                .Include(p => p.User)
+                    .ThenInclude(u => u!.UserRoles)
+                    .ThenInclude(ur => ur.Rol)
+                .FirstOrDefaultAsync(p => p.PerId == id);
 
             if (person == null)
             {
                 return NotFound();
             }
 
-            return person;
+            return Ok(MapToDto(person));
         }
 
         // POST: api/person
         [HttpPost]
-        public async Task<ActionResult<Person>> PostPerson(Person person)
+        public async Task<ActionResult<PersonWithRoleDto>> PostPerson(Person person)
         {
             _context.Persons.Add(person);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetPerson), new { id = person.PerId }, person);
+            return CreatedAtAction(nameof(GetPerson), new { id = person.PerId }, MapToDto(person));
         }
 
         // PUT: api/person/5
@@ -96,6 +107,27 @@ namespace NailsFlow.Api.Controllers
         private bool PersonExists(int id)
         {
             return _context.Persons.Any(e => e.PerId == id);
+        }
+
+        private static PersonWithRoleDto MapToDto(Person person)
+        {
+            var roles = person.User?.UserRoles?
+                .Where(ur => ur.Rol != null)
+                .Select(ur => ur.Rol!.RolName)
+                .ToList() ?? new List<string>();
+
+            return new PersonWithRoleDto
+            {
+                PerId = person.PerId,
+                PerFirstName = person.PerFirstName,
+                PerLastName = person.PerLastName,
+                PerPhone = person.PerPhone,
+                PerEmail = person.PerEmail,
+                PerBirthDate = person.PerBirthDate,
+                UserName = person.User?.UsrName,
+                HasUserAccount = person.User != null,
+                Role = roles.Any() ? string.Join(", ", roles) : "Cliente"
+            };
         }
     }
 }

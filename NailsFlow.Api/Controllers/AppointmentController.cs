@@ -20,11 +20,10 @@ namespace NailsFlow.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Appointment>>> GetAppointments()
         {
-            // Traemos las citas incluyendo TODOS los datos relacionados
             return await _context.Appointments
                 .Include(a => a.Service)
-                .Include(a => a.person)
-                .Include(a => a.User) // Incluye a la manicurista asignada
+                .Include(a => a.Person)
+                .Include(a => a.User)
                 .ToListAsync();
         }
 
@@ -34,9 +33,9 @@ namespace NailsFlow.Api.Controllers
         {
             var appointment = await _context.Appointments
                 .Include(a => a.Service)
-                .Include(a => a.person)
+                .Include(a => a.Person)
                 .Include(a => a.User)
-                .FirstOrDefaultAsync(a => a.AppointId == id); // Usamos AppointId
+                .FirstOrDefaultAsync(a => a.AppointId == id);
 
             if (appointment == null)
             {
@@ -46,22 +45,21 @@ namespace NailsFlow.Api.Controllers
             return appointment;
         }
 
-        // POST: api/Appointment 
+        // POST: api/Appointment
         [HttpPost]
         public async Task<ActionResult<Appointment>> PostAppointment(Appointment appointment)
         {
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
-            // Usamos AppointId para devolver el registro recién creado
             return CreatedAtAction(nameof(GetAppointment), new { id = appointment.AppointId }, appointment);
         }
 
-        // PUT: api/Appointment/5 
+        // PUT: api/Appointment/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAppointment(int id, Appointment appointment)
         {
-            if (id != appointment.AppointId) // Usamos AppointId
+            if (id != appointment.AppointId)
             {
                 return BadRequest();
             }
@@ -105,7 +103,7 @@ namespace NailsFlow.Api.Controllers
 
         private bool AppointmentExists(int id)
         {
-            return _context.Appointments.Any(e => e.AppointId == id); // Usamos AppointId
+            return _context.Appointments.Any(e => e.AppointId == id);
         }
     }
 }

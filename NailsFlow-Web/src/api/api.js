@@ -29,7 +29,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Solo recargamos si da error 401 Y NO estamos en la página de login
+    if (error.response?.status === 401 && window.location.pathname !== '/login') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -53,11 +54,11 @@ export const serviceApi = {
 };
 
 export const customerApi = {
-  getAll: () => api.get('/Customer'),
-  getById: (id) => api.get(`/Customer/${id}`),
-  create: (data) => api.post('/Customer', data),
-  update: (id, data) => api.put(`/Customer/${id}`, data),
-  delete: (id) => api.delete(`/Customer/${id}`),
+  getAll: () => api.get('/Person'),
+  getById: (id) => api.get(`/Person/${id}`),
+  create: (data) => api.post('/Person', data),
+  update: (id, data) => api.put(`/Person/${id}`, data),
+  delete: (id) => api.delete(`/Person/${id}`),
 };
 
 export const appointmentApi = {
@@ -90,6 +91,10 @@ export const userApi = {
   create: (data) => api.post('/User', data),
   update: (id, data) => api.put(`/User/${id}`, data),
   delete: (id) => api.delete(`/User/${id}`),
+};
+
+export const statusApi = {
+  getAll: () => api.get('/AppointmentStatus'),
 };
 
 export { getToken, getUser };

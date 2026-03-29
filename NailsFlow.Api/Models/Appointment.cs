@@ -16,7 +16,7 @@ public class Appointment
     [Column("appoint_status")]
     public AppointmentStatus Status { get; set; } = AppointmentStatus.Requested;
 
-    [MaxLength(500)]        
+    [MaxLength(500)]
     [Column("appoint_voucherurl")]
     public string? PaymentVoucherUrl { get; set; }
 
@@ -31,7 +31,7 @@ public class Appointment
 
     // Propiedades de navegación (Relaciones del MER)
     [ForeignKey("PerId")]
-    public Person? person { get; set; }
+    public Person? Person { get; set; }
 
     [ForeignKey("SerId")]
     public Service? Service { get; set; }
