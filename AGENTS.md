@@ -199,3 +199,42 @@ import { useAuth } from './context/AuthContext';
 - **Frontend URL**: `http://localhost:5173`
 - **Swagger**: `/swagger` (Development mode)
 - **Token**: stored in localStorage
+
+## Iconography
+
+The project uses **Iconify** with the "Emoji One (Monotone)" icon set (`@iconify-icons/emojione-monotone`) instead of native emojis for consistent cross-platform rendering.
+
+### Installation
+```bash
+npm install @iconify/react @iconify-icons/emojione-monotone
+```
+
+### Usage
+```jsx
+import { Icon } from '@iconify/react';
+import nailPolish from '@iconify-icons/emojione-monotone/nail-polish';
+import bustsInSilhouette from '@iconify-icons/emojione-monotone/busts-in-silhouette';
+import calendar from '@iconify-icons/emojione-monotone/calendar';
+import creditCard from '@iconify-icons/emojione-monotone/credit-card';
+import wrappedGift from '@iconify-icons/emojione-monotone/wrapped-gift';
+import moneyBag from '@iconify-icons/emojione-monotone/money-bag';
+import wavingHand from '@iconify-icons/emojione-monotone/waving-hand';
+import telephone from '@iconify-icons/emojione-monotone/telephone';
+import email from '@iconify-icons/emojione-monotone/e-mail';
+
+// In component:
+<Icon icon={nailPolish} className="w-6 h-6 text-pink-500" />
+```
+
+### Available Icons
+| Icon Name | Component | Used For |
+|-----------|-----------|----------|
+| `nail-polish` | `nailPolish` | Servicios, nail polish |
+| `busts-in-silhouette` | `bustsInSilhouette` | Clientes, personas |
+| `calendar` | `calendar` | Citas, appointments |
+| `credit-card` | `creditCard` | Pagos, payments |
+| `wrapped-gift` | `wrappedGift` | Promociones |
+| `money-bag` | `moneyBag` | Ingresos, revenue |
+| `waving-hand` | `wavingHand` | Bienvenida |
+| `telephone` | `telephone` | Teléfono |
+| `e-mail` | `email` | Email |

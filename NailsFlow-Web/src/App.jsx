@@ -1,3 +1,9 @@
+import { Icon } from '@iconify/react';
+import nailPolish from '@iconify-icons/emojione-monotone/nail-polish';
+import bustsInSilhouette from '@iconify-icons/emojione-monotone/busts-in-silhouette';
+import calendar from '@iconify-icons/emojione-monotone/calendar';
+import moneyBag from '@iconify-icons/emojione-monotone/money-bag';
+import wavingHand from '@iconify-icons/emojione-monotone/waving-hand';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -48,10 +54,10 @@ const Dashboard = () => {
   }, []);
 
   const statCards = [
-    { label: 'Servicios', value: stats.services, icon: '💅', color: 'from-pink-400 to-pink-500', bg: 'bg-pink-50' },
-    { label: 'Clientes', value: stats.customers, icon: '👥', color: 'from-purple-400 to-purple-500', bg: 'bg-purple-50' },
-    { label: 'Citas', value: stats.appointments, icon: '📅', color: 'from-blue-400 to-blue-500', bg: 'bg-blue-50' },
-    { label: 'Ingresos', value: `$${stats.revenue.toLocaleString('es-CO')}`, icon: '💰', color: 'from-green-400 to-green-500', bg: 'bg-green-50' }
+    { label: 'Servicios', value: stats.services, icon: nailPolish, color: 'from-pink-400 to-pink-500', bg: 'bg-pink-50' },
+    { label: 'Clientes', value: stats.customers, icon: bustsInSilhouette, color: 'from-purple-400 to-purple-500', bg: 'bg-purple-50' },
+    { label: 'Citas', value: stats.appointments, icon: calendar, color: 'from-blue-400 to-blue-500', bg: 'bg-blue-50' },
+    { label: 'Ingresos', value: `$${stats.revenue.toLocaleString('es-CO')}`, icon: moneyBag, color: 'from-green-400 to-green-500', bg: 'bg-green-50' }
   ];
 
   if (loading) {
@@ -65,7 +71,7 @@ const Dashboard = () => {
   return (
     <div className="animate-fade-in">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-800">Bienvenido{user ? `, ${user.username}` : ''} 👋</h2>
+        <h2 className="text-3xl font-bold text-gray-800">Bienvenido{user ? `, ${user.username}` : ''} <Icon icon={wavingHand} className="inline w-8 h-8" /></h2>
         <p className="text-gray-500 mt-1">Aquí está el resumen de tu salón hoy.</p>
       </div>
 
@@ -74,7 +80,7 @@ const Dashboard = () => {
           <div key={index} className="bg-white rounded-2xl p-5 lg:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
             <div className="flex items-center justify-between mb-4">
               <div className={`p-3 rounded-xl ${stat.bg}`}>
-                <span className="text-2xl">{stat.icon}</span>
+                <Icon icon={stat.icon} className="w-6 h-6 text-gray-600" />
               </div>
               <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${stat.color} opacity-10`}></div>
             </div>
@@ -99,9 +105,9 @@ const Dashboard = () => {
           <h3 className="text-lg font-bold mb-4">¡Bienvenida!</h3>
           <p className="mb-4 opacity-90">Gestiona tu salón de manicura de manera fácil y elegante.</p>
           <div className="flex gap-2 flex-wrap">
-            <span className="px-3 py-1 bg-white/20 rounded-full text-sm">💅 Servicios</span>
-            <span className="px-3 py-1 bg-white/20 rounded-full text-sm">📅 Citas</span>
-            <span className="px-3 py-1 bg-white/20 rounded-full text-sm">👥 Clientes</span>
+            <span className="px-3 py-1 bg-white/20 rounded-full text-sm flex items-center gap-1"><Icon icon={nailPolish} className="w-4 h-4" /> Servicios</span>
+            <span className="px-3 py-1 bg-white/20 rounded-full text-sm flex items-center gap-1"><Icon icon={calendar} className="w-4 h-4" /> Citas</span>
+            <span className="px-3 py-1 bg-white/20 rounded-full text-sm flex items-center gap-1"><Icon icon={bustsInSilhouette} className="w-4 h-4" /> Clientes</span>
           </div>
         </div>
       </div>

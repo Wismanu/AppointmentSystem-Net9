@@ -1,0 +1,20 @@
+import { Icon } from '@iconify/react';
+import nailPolish from '@iconify-icons/emojione-monotone/nail-polish';
+import creditCard from '@iconify-icons/emojione-monotone/credit-card';
+import bustsInSilhouette from '@iconify-icons/emojione-monotone/busts-in-silhouette';
+import telephone from '@iconify-icons/emojione-monotone/telephone';
+import email from '@iconify-icons/emojione-monotone/e-mail';
+import calendar from '@iconify-icons/emojione-monotone/calendar';
+import wrappedGift from '@iconify-icons/emojione-monotone/wrapped-gift';
+import moneyBag from '@iconify-icons/emojione-monotone/money-bag';
+import wavingHand from '@iconify-icons/emojione-monotone/waving-hand';
+
+export const IconNailPolish = () => <Icon icon={nailPolish} />;
+export const IconCreditCard = () => <Icon icon={creditCard} />;
+export const IconPeople = () => <Icon icon={bustsInSilhouette} />;
+export const IconTelephone = () => <Icon icon={telephone} />;
+export const IconEmail = () => <Icon icon={email} />;
+export const IconCalendar = () => <Icon icon={calendar} />;
+export const IconGift = () => <Icon icon={wrappedGift} />;
+export const IconMoneyBag = () => <Icon icon={moneyBag} />;
+export const IconWavingHand = () => <Icon icon={wavingHand} />;

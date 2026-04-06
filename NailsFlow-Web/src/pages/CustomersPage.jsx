@@ -1,3 +1,7 @@
+import { Icon } from '@iconify/react';
+import bustsInSilhouette from '@iconify-icons/emojione-monotone/busts-in-silhouette';
+import telephone from '@iconify-icons/emojione-monotone/telephone';
+import email from '@iconify-icons/emojione-monotone/e-mail';
 import { useEffect, useState } from 'react';
 import { customerApi } from '../api/api';
 
@@ -162,7 +166,7 @@ const CustomersPage = () => {
         </div>
       ) : customers.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-pink-100">
-          <div className="text-6xl mb-4">👥</div>
+          <Icon icon={bustsInSilhouette} className="w-16 h-16 mx-auto mb-4 text-pink-300" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay personas registradas</h3>
           <p className="text-gray-500 mb-6">Comienza agregando tu primera persona</p>
           <button onClick={() => setShowModal(true)} className="bg-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-pink-600 transition-colors">
@@ -201,10 +205,10 @@ const CustomersPage = () => {
                     <td className="px-6 py-4 hidden md:table-cell">
                       <div className="space-y-1">
                         {customer.perPhone && (
-                          <p className="text-gray-600 text-sm">📞 {customer.perPhone}</p>
+                          <p className="text-gray-600 text-sm flex items-center gap-1"><Icon icon={telephone} className="w-4 h-4" /> {customer.perPhone}</p>
                         )}
                         {customer.perEmail && (
-                          <p className="text-gray-600 text-sm">✉️ {customer.perEmail}</p>
+                          <p className="text-gray-600 text-sm flex items-center gap-1"><Icon icon={email} className="w-4 h-4" /> {customer.perEmail}</p>
                         )}
                         {!customer.perPhone && !customer.perEmail && (
                           <span className="text-gray-400 text-sm">Sin contacto</span>

@@ -1,3 +1,5 @@
+import { Icon } from '@iconify/react';
+import calendar from '@iconify-icons/emojione-monotone/calendar';
 import { useEffect, useState, useRef } from 'react';
 import { appointmentApi, serviceApi, customerApi, statusApi } from '../api/api';
 
@@ -157,7 +159,7 @@ const AppointmentsPage = () => {
         </div>
       ) : appointments.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-pink-100">
-          <div className="text-6xl mb-4">📅</div>
+          <Icon icon={calendar} className="w-16 h-16 mx-auto mb-4 text-pink-300" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay citas todavía</h3>
           <p className="text-gray-500 mb-6">Programa tu primera cita</p>
           <button onClick={() => setShowModal(true)} className="bg-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-pink-600 transition-colors">

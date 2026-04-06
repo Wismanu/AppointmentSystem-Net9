@@ -1,3 +1,5 @@
+import { Icon } from '@iconify/react';
+import nailPolish from '@iconify-icons/emojione-monotone/nail-polish';
 import { useEffect, useState } from 'react';
 import { serviceApi } from '../api/api';
 
@@ -92,7 +94,7 @@ const ServicesPage = () => {
         </div>
       ) : services.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-pink-100">
-          <div className="text-6xl mb-4">💅</div>
+          <Icon icon={nailPolish} className="w-16 h-16 mx-auto mb-4 text-pink-300" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay servicios todavía</h3>
           <p className="text-gray-500 mb-6">Comienza agregando tu primer servicio</p>
           <button 
@@ -110,8 +112,8 @@ const ServicesPage = () => {
               className="bg-white p-5 lg:p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg hover:border-pink-200 transition-all group"
             >
               <div className="flex justify-between items-start mb-4">
-                <div className="bg-gradient-to-br from-pink-50 to-purple-50 p-3 rounded-xl text-2xl group-hover:scale-110 transition-transform">
-                  💅
+                <div className="bg-gradient-to-br from-pink-50 to-purple-50 p-3 rounded-xl group-hover:scale-110 transition-transform">
+                  <Icon icon={nailPolish} className="w-6 h-6 text-pink-500" />
                 </div>
                 <span className="text-xs font-bold text-purple-500 bg-purple-50 px-2 py-1 rounded-full">
                   {service.serDuration} min

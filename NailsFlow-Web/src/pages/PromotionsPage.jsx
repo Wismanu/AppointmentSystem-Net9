@@ -1,3 +1,5 @@
+import { Icon } from '@iconify/react';
+import wrappedGift from '@iconify-icons/emojione-monotone/wrapped-gift';
 import { useEffect, useState } from 'react';
 import { promotionApi, serviceApi } from '../api/api';
 
@@ -127,7 +129,7 @@ const PromotionsPage = () => {
         </div>
       ) : promotions.length === 0 ? (
         <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-pink-100">
-          <div className="text-6xl mb-4">🎁</div>
+          <Icon icon={wrappedGift} className="w-16 h-16 mx-auto mb-4 text-pink-300" />
           <h3 className="text-xl font-semibold text-gray-700 mb-2">No hay promociones todavía</h3>
           <p className="text-gray-500 mb-6">Crea tu primera promoción</p>
           <button onClick={() => setShowModal(true)} className="bg-pink-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-pink-600 transition-colors">
@@ -139,8 +141,8 @@ const PromotionsPage = () => {
           {promotions.map((promotion) => (
             <div key={promotion.promoId} className={`bg-white rounded-2xl shadow-sm border-2 transition-all p-5 ${promotion.status ? 'border-pink-200 hover:border-pink-400' : 'border-gray-200 opacity-75'}`}>
               <div className="flex justify-between items-start mb-4">
-                <div className="bg-gradient-to-br from-pink-400 to-purple-500 p-3 rounded-xl text-2xl">
-                  🎁
+                <div className="bg-gradient-to-br from-pink-400 to-purple-500 p-3 rounded-xl">
+                  <Icon icon={wrappedGift} className="w-6 h-6 text-white" />
                 </div>
                 <button
                   onClick={() => toggleStatus(promotion)}

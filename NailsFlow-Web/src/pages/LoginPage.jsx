@@ -1,3 +1,5 @@
+import { Icon } from '@iconify/react';
+import nailPolish from '@iconify-icons/emojione-monotone/nail-polish';
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -43,7 +45,7 @@ const LoginPage = () => {
         <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/50">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-400 to-purple-500 rounded-2xl mb-4 shadow-lg shadow-pink-200">
-              <span className="text-3xl">💅</span>
+              <Icon icon={nailPolish} className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
               NailsBeauty
