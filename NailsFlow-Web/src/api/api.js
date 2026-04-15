@@ -62,11 +62,15 @@ export const customerApi = {
 };
 
 export const appointmentApi = {
-  getAll: () => api.get('/Appointment'),
-  getById: (id) => api.get(`/Appointment/${id}`),
-  create: (data) => api.post('/Appointment', data),
-  update: (id, data) => api.put(`/Appointment/${id}`, data),
-  delete: (id) => api.delete(`/Appointment/${id}`),
+    getAll: () => api.get('/Appointment'),
+    getById: (id) => api.get(`/Appointment/${id}`),
+    create: (data) => api.post('/Appointment', data),
+    update: (id, data) => api.put(`/Appointment/${id}`, data),
+    delete: (id) => api.delete(`/Appointment/${id}`),
+    approveVoucher: (id) => api.post(`/Appointment/ApproveVoucher/${id}`),
+    assignToMe: (id) => api.post(`/Appointment/AssignToMe/${id}`),
+    startService: (id) => api.post(`/Appointment/StartService/${id}`),
+    finishService: (id) => api.post(`/Appointment/FinishService/${id}`)
 };
 
 export const promotionApi = {
@@ -78,11 +82,22 @@ export const promotionApi = {
 };
 
 export const paymentApi = {
-  getAll: () => api.get('/Payment'),
-  getById: (id) => api.get(`/Payment/${id}`),
-  create: (data) => api.post('/Payment', data),
-  update: (id, data) => api.put(`/Payment/${id}`, data),
-  delete: (id) => api.delete(`/Payment/${id}`),
+    getAll: () => api.get('/Payment'),
+    getById: (id) => api.get(`/Payment/${id}`),
+    create: (data) => api.post('/Payment', data),
+    update: (id, data) => api.put(`/Payment/${id}`, data),
+    delete: (id) => api.delete(`/Payment/${id}`)
+};
+
+export const rolApi = {
+    getAll: () => api.get('/Rol'),
+    getById: (id) => api.get(`/Rol/${id}`),
+    create: (data) => api.post('/Rol', data),
+    update: (id, data) => api.put(`/Rol/${id}`, data),
+    delete: (id) => api.delete(`/Rol/${id}`),
+    assignToUser: (data) => api.post('/Rol/AssignToUser', data),
+    removeFromUser: (data) => api.delete('/Rol/RemoveFromUser', data),
+    getRolesByUser: (usrId) => api.get(`/Rol/ByUser/${usrId}`)
 };
 
 export const userApi = {

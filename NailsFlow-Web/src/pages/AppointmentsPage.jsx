@@ -1,22 +1,25 @@
 import { Icon } from '@iconify/react';
 import calendar from '@iconify-icons/emojione-monotone/calendar';
 import { useEffect, useState, useRef } from 'react';
-import { appointmentApi, serviceApi, customerApi, statusApi } from '../api/api';
+import { appointmentApi, serviceApi, customerApi, statusApi, userApi } from '../api/api';
+import { useAuth } from '../context/AuthContext';
+import AppointmentStatus from '../models/AppointmentStatus';
 
 const statusColors = {
-  Requested: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
-  PendingAdvancePayment: { bg: 'bg-orange-100', text: 'text-orange-700' },
-  AdvancePaymentConfirmed: { bg: 'bg-amber-100', text: 'text-amber-700' },
-  Assigned: { bg: 'bg-blue-100', text: 'text-blue-700' },
-  Rescheduled: { bg: 'bg-indigo-100', text: 'text-indigo-700' },
-  InProgress: { bg: 'bg-purple-100', text: 'text-purple-700' },
-  CompletedPendingPayment: { bg: 'bg-teal-100', text: 'text-teal-700' },
-  CompletedAndConfirmed: { bg: 'bg-green-100', text: 'text-green-700' },
-  Cancelled: { bg: 'bg-red-100', text: 'text-red-700' }
+  1: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Solicitado' },
+  2: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Pago Pendiente' },
+  3: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Pago Confirmado' },
+  4: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Asignado' },
+  5: { bg: 'bg-indigo-100', text: 'text-indigo-700', label: 'Reprogramado' },
+  6: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'En Proceso' },
+  7: { bg: 'bg-teal-100', text: 'text-teal-700', label: 'Completado - Pago Pendiente' },
+  8: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completado y Confirmado' },
+  9: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelado' }
 };
 
 const AppointmentsPage = () => {
-  const timeInputRef = useRef(null); // Aquí declaramos la referencia
+  const timeInputRef = useRef(null);
+  const { user } = useAuth();
   
   const [appointments, setAppointments] = useState([]);
   const [services, setServices] = useState([]);
@@ -25,14 +28,66 @@ const AppointmentsPage = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState(null);
+  
+  const isCliente = user?.roles?.some(r => r.rolName === 'Cliente');
+  const isAdmin = user?.roles?.some(r => r.rolName === 'Administrador');
+  const isManicurista = user?.roles?.some(r => r.rolName === 'Manicurista');
+
   const [formData, setFormData] = useState({
     appointDate: '',
     appointTime: '',
     perId: '',
     serId: '',
-    usrId: 1,
-    status: 'Requested'
+    usrId: user?.usrId || 1,
+    status: 'Requested',
+    paymentVoucher: null
   });
+
+  // Helper function to get status display
+  const getStatusDisplay = (status) => {
+    // If status is a number, convert to label
+    if (typeof status === 'number') {
+      const statusInfo = statusColors[status];
+      return statusInfo ? statusInfo.label : `Estado ${status}`;
+    }
+    // If status is a string (like 'Requested'), get from statuses array
+    const statusInfo = statuses.find(s => s.name === status);
+    return statusInfo?.label || status;
+  };
+
+  const getStatusBadge = (status) => {
+    let statusValue, colors;
+    
+    if (typeof status === 'number') {
+      statusValue = status;
+      colors = statusColors[status] || statusColors[1];
+    } else {
+      const statusObj = statuses.find(s => s.name === status);
+      statusValue = statusObj?.value || 1;
+      colors = statusColors[statusValue] || statusColors[1];
+    }
+    
+    return (
+      <span className={`px-3 py-1 rounded-full text-xs font-bold ${colors.bg} ${colors.text}`}>
+        {colors.label}
+      </span>
+    );
+  };
+
+  const getCustomerName = (perId) => {
+    const customer = customers.find(c => c.perId === perId);
+    return customer ? `${customer.perFirstName} ${customer.perLastName}` : `Cliente #${perId}`;
+  };
+
+  const getServiceName = (serId) => {
+    const service = services.find(s => s.serId === serId);
+    return service ? service.serName : `Servicio #${serId}`;
+  };
+
+  const getServicePrice = (serId) => {
+    const service = services.find(s => s.serId === serId);
+    return service ? service.serPrice : 0;
+  };
 
   const fetchData = async () => {
     try {
@@ -57,7 +112,7 @@ const AppointmentsPage = () => {
     fetchData();
   }, []);
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const appointDateTime = `${formData.appointDate}T${formData.appointTime}:00`;
@@ -66,18 +121,30 @@ const AppointmentsPage = () => {
         perId: parseInt(formData.perId),
         serId: parseInt(formData.serId),
         usrId: parseInt(formData.usrId),
-        status: formData.status
+        status: formData.status,
+        paymentVoucherUrl: formData.paymentVoucher ? URL.createObjectURL(formData.paymentVoucher) : null
       };
+      
+      // Si hay voucher, establecemos el estado como PendingAdvancePayment
+      // Si no hay voucher, establecemos el estado como Requested
+      // Esto replica la lógica del backend para consistencia
+      if (!editingAppointment) {
+        if (formData.paymentVoucher) {
+          data.status = AppointmentStatus.PendingAdvancePayment;
+        } else {
+          data.status = AppointmentStatus.Requested;
+        }
+      }
       
       if (editingAppointment) {
         await appointmentApi.update(editingAppointment.appointId, data);
       } else {
         await appointmentApi.create(data);
       }
-
+      
       setShowModal(false);
       setEditingAppointment(null);
-      setFormData({ appointDate: '', appointTime: '', perId: '', serId: '', usrId: 1, status: 'Requested' });
+      setFormData({ appointDate: '', appointTime: '', perId: '', serId: '', usrId: 1, status: 'Requested', paymentVoucher: null });
       fetchData();
     } catch (error) {
       console.error('Error al guardar:', error);
@@ -93,7 +160,8 @@ const AppointmentsPage = () => {
       perId: appointment.perId?.toString() || '',
       serId: appointment.serId?.toString() || '',
       usrId: appointment.usrId?.toString() || '1',
-      status: appointment.status || 'Requested'
+      status: appointment.status || AppointmentStatus.Requested,
+      paymentVoucher: appointment.paymentVoucherUrl ? new File([], appointment.paymentVoucherUrl, { type: 'image/jpeg' }) : null
     });
     setShowModal(true);
   };
@@ -109,30 +177,49 @@ const AppointmentsPage = () => {
     }
   };
 
-  const getStatusBadge = (status) => {
-    const colors = statusColors[status] || statusColors.Requested;
-    const statusInfo = statuses.find(s => s.name === status);
-    const label = statusInfo?.label || status;
-    return (
-      <span className={`px-3 py-1 rounded-full text-xs font-bold ${colors.bg} ${colors.text}`}>
-        {label}
-      </span>
-    );
+  // Role-based action handlers
+  const handleApproveVoucher = async (appointmentId) => {
+    if (window.confirm('¿Estás segura de aprobar este comprobante de pago?')) {
+      try {
+        await appointmentApi.approveVoucher(appointmentId);
+        fetchData();
+      } catch (error) {
+        console.error('Error al aprobar voucher:', error);
+      }
+    }
   };
 
-  const getCustomerName = (perId) => {
-    const customer = customers.find(c => c.perId === perId);
-    return customer ? `${customer.perFirstName} ${customer.perLastName}` : 'Cliente no encontrado';
+  const handleAssignToMe = async (appointmentId) => {
+    if (window.confirm('¿Estás segura de tomar esta cita?')) {
+      try {
+        await appointmentApi.assignToMe(appointmentId);
+        fetchData();
+      } catch (error) {
+        console.error('Error al asignar cita:', error);
+      }
+    }
   };
 
-  const getServiceName = (serId) => {
-    const service = services.find(s => s.serId === serId);
-    return service ? service.serName : 'Servicio no encontrado';
+  const handleStartService = async (appointmentId) => {
+    if (window.confirm('¿Estás segura de iniciar este servicio?')) {
+      try {
+        await appointmentApi.startService(appointmentId);
+        fetchData();
+      } catch (error) {
+        console.error('Error al iniciar servicio:', error);
+      }
+    }
   };
 
-  const getServicePrice = (serId) => {
-    const service = services.find(s => s.serId === serId);
-    return service ? service.serPrice : 0;
+  const handleFinishService = async (appointmentId) => {
+    if (window.confirm('¿Estás segura de finalizar este servicio?')) {
+      try {
+        await appointmentApi.finishService(appointmentId);
+        fetchData();
+      } catch (error) {
+        console.error('Error al finalizar servicio:', error);
+      }
+    }
   };
 
   return (
@@ -221,25 +308,89 @@ const AppointmentsPage = () => {
                 </div>
               </div>
 
-              <div className="flex gap-2 mt-5 pt-4 border-t border-gray-100">
-                <button 
-                  onClick={() => handleEdit(appointment)}
-                  className="flex-1 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-pink-50 hover:text-pink-600 rounded-xl transition-colors flex items-center justify-center gap-1"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Editar
-                </button>
-                <button 
-                  onClick={() => handleDelete(appointment.appointId)}
-                  className="px-3 py-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
+<div className="flex gap-2 mt-5 pt-4 border-t border-gray-100">
+                    <button 
+                      onClick={() => handleEdit(appointment)}
+                      className="flex-1 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-pink-50 hover:text-pink-600 rounded-xl transition-colors flex items-center justify-center gap-1"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      Editar
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(appointment.appointId)}
+                      className="px-3 py-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                    
+                    {/* Role-based action buttons */}
+                    {user && user.roles && user.roles.length > 0 && (
+                      <>
+                        {/* Administrador: Aprobar voucher */}
+                        {user.roles.some(role => role.rolName === 'Administrador') && 
+                          appointment.paymentVoucherUrl && 
+                          ![AppointmentStatus.AdvancePaymentConfirmed, AppointmentStatus.Assigned, AppointmentStatus.InProgress, AppointmentStatus.CompletedPendingPayment, AppointmentStatus.CompletedAndConfirmed].includes(appointment.status) && (
+                            <button 
+                              onClick={() => handleApproveVoucher(appointment.appointId)}
+                              className="flex-1 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 hover:text-green-700 rounded-xl transition-colors flex items-center justify-center gap-1"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0018 0z" />
+                              </svg>
+                              Aprobar Pago
+                            </button>
+                          )}
+                        
+                        {/* Manicurista: Asignarse a sí misma, Iniciar servicio, Finalizar servicio */}
+                        {user.roles.some(role => role.rolName === 'Manicurista') && (
+                          <>
+                            {/* Asignarse a sí misma (solo para estados iniciales) */}
+                            {[AppointmentStatus.Requested, AppointmentStatus.PendingAdvancePayment, AppointmentStatus.AdvancePaymentConfirmed].includes(appointment.status) && appointment.usrId !== user.usrId && (
+                              <button 
+                                onClick={() => handleAssignToMe(appointment.appointId)}
+                                className="flex-1 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 rounded-xl transition-colors flex items-center justify-center gap-1"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                Tomar Cita
+                              </button>
+                            )}
+                            
+                            {/* Iniciar servicio (solo cuando está asignada) */}
+                            {appointment.status === AppointmentStatus.Assigned && appointment.usrId === user.usrId && (
+                              <button 
+                                onClick={() => handleStartService(appointment.appointId)}
+                                className="flex-1 py-2 text-sm font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 hover:text-purple-700 rounded-xl transition-colors flex items-center justify-center gap-1"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Iniciar Servicio
+                              </button>
+                            )}
+                            
+                            {/* Finalizar servicio (solo cuando está en progreso) */}
+                            {appointment.status === AppointmentStatus.InProgress && appointment.usrId === user.usrId && (
+                              <button 
+                                onClick={() => handleFinishService(appointment.appointId)}
+                                className="flex-1 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 rounded-xl transition-colors flex items-center justify-center gap-1"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m6 4v2m-6-4v2m6-4v2M3 7h18" />
+                                </svg>
+                                Finalizar Servicio
+                              </button>
+                            )}
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
             </div>
           ))}
         </div>
@@ -260,6 +411,14 @@ const AppointmentsPage = () => {
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Cliente info - shown for Cliente role, hidden for others */}
+              {isCliente && (
+                <div className="p-4 bg-pink-50 rounded-xl">
+                  <p className="text-sm text-gray-600">Cita para: <span className="font-semibold text-gray-800">{user?.name || user?.username}</span></p>
+                  <p className="text-xs text-gray-400">El cliente eres tú</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="appointDate" className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
@@ -307,9 +466,11 @@ const AppointmentsPage = () => {
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="perId" className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
-                <select
+              {/* Cliente selector - hidden for Cliente role */}
+              {!isCliente && (
+                <div>
+                  <label htmlFor="perId" className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                  <select
                   id="perId"
                   name="perId"
                   value={formData.perId}
@@ -325,6 +486,7 @@ const AppointmentsPage = () => {
                   ))}
                 </select>
               </div>
+              )}
 
               <div>
                 <label htmlFor="serId" className="block text-sm font-medium text-gray-700 mb-1">Servicio</label>
@@ -345,21 +507,50 @@ const AppointmentsPage = () => {
                 </select>
               </div>
 
+              {/* Estado - solo visible para Administrador */}
+              {isAdmin && (
+                <div>
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                  <select
+                    id="status"
+                    name="status"
+                    value={formData.status}
+                    onChange={(e) => setFormData({...formData, status: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
+                  >
+                    {statuses.map(status => (
+                      <option key={status.name} value={status.name}>
+                        {status.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
+              {/* Info de estado automatico para Cliente y Manicurista */}
+              {!isAdmin && (
+                <div className="p-3 bg-gray-50 rounded-xl">
+                  <p className="text-sm text-gray-500">El estado se gestionará automáticamente según las acciones realizadas.</p>
+                </div>
+              )}
+              
               <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                <select
-                  id="status"
-                  name="status"
-                  value={formData.status}
-                  onChange={(e) => setFormData({...formData, status: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none transition-all"
-                >
-                  {statuses.map(status => (
-                    <option key={status.name} value={status.name}>
-                      {status.label}
-                    </option>
-                  ))}
-                </select>
+                <label htmlFor="paymentVoucher" className="block text-sm font-medium text-gray-700 mb-1">Comprobante de Pago (Voucher)</label>
+                <input
+                  type="file"
+                  id="paymentVoucher"
+                  name="paymentVoucher"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setFormData({...formData, paymentVoucher: e.target.files[0]});
+                    }
+                  }}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-100 outline-none"
+                />
+                {formData.paymentVoucher && (
+                  <p className="mt-2 text-sm text-green-600">Archivo seleccionado: {formData.paymentVoucher.name}</p>
+                )}
               </div>
 
               <div className="flex gap-3 pt-4">

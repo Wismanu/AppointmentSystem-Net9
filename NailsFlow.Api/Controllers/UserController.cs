@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NailsFlow.Api.Data;
@@ -20,18 +21,37 @@ namespace NailsFlow.Api.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            // Incluimos los roles asociados al usuario para saber si es Admin o Manicurista
-            return await _context.Users
+            var users = await _context.Users
+                .Include(u => u.Person)
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Rol)
                 .ToListAsync();
+
+            // Map to a simpler DTO that includes name
+            var usersDto = users.Select(u => new 
+            {
+                usrId = u.UsrId,
+                name = u.Person?.PerFirstName ?? "Sin nombre",
+                lastName = u.Person?.PerLastName ?? "",
+                username = u.UsrName,
+                phone = u.Person?.PerPhone,
+                email = u.Person?.PerEmail,
+                roles = u.UserRoles.Select(ur => new 
+                {
+                    rolId = ur.RolId,
+                    rolName = ur.Rol?.RolName
+                }).ToList()
+            }).ToList();
+
+            return Ok(usersDto);
         }
 
         // GET: api/User/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult> GetUser(int id)
         {
             var user = await _context.Users
+                .Include(u => u.Person)
                 .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Rol)
                 .FirstOrDefaultAsync(u => u.UsrId == id);
@@ -41,7 +61,22 @@ namespace NailsFlow.Api.Controllers
                 return NotFound();
             }
 
-            return user;
+            var userDto = new
+            {
+                usrId = user.UsrId,
+                name = user.Person?.PerFirstName ?? "Sin nombre",
+                lastName = user.Person?.PerLastName ?? "",
+                username = user.UsrName,
+                phone = user.Person?.PerPhone,
+                email = user.Person?.PerEmail,
+                roles = user.UserRoles.Select(ur => new 
+                {
+                    rolId = ur.RolId,
+                    rolName = ur.Rol?.RolName
+                }).ToList()
+            };
+
+            return Ok(userDto);
         }
 
         // POST: api/User

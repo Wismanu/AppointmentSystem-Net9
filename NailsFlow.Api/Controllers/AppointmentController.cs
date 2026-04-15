@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NailsFlow.Api.Data;
@@ -47,8 +48,19 @@ namespace NailsFlow.Api.Controllers
 
         // POST: api/Appointment
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<Appointment>> PostAppointment(Appointment appointment)
         {
+            // Set initial state based on whether a voucher was uploaded
+            if (!string.IsNullOrEmpty(appointment.PaymentVoucherUrl))
+            {
+                appointment.Status = AppointmentStatus.PendingAdvancePayment;
+            }
+            else
+            {
+                appointment.Status = AppointmentStatus.Requested;
+            }
+
             _context.Appointments.Add(appointment);
             await _context.SaveChangesAsync();
 
@@ -96,6 +108,96 @@ namespace NailsFlow.Api.Controllers
             }
 
             _context.Appointments.Remove(appointment);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // POST: api/Appointment/ApproveVoucher/5
+        [HttpPost("ApproveVoucher/{id}")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> ApproveVoucher(int id)
+        {
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            if (string.IsNullOrEmpty(appointment.PaymentVoucherUrl))
+            {
+                return BadRequest("No voucher uploaded for this appointment");
+            }
+
+            appointment.Status = AppointmentStatus.AdvancePaymentConfirmed;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // POST: api/Appointment/AssignToMe/5
+        [HttpPost("AssignToMe/{id}")]
+        [Authorize(Roles = "Manicurista")]
+        public async Task<IActionResult> AssignToMe(int id)
+        {
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            if (appointment.Status != AppointmentStatus.Requested && 
+                appointment.Status != AppointmentStatus.PendingAdvancePayment &&
+                appointment.Status != AppointmentStatus.AdvancePaymentConfirmed)
+            {
+                return BadRequest("Appointment cannot be assigned in its current state");
+            }
+
+            appointment.Status = AppointmentStatus.Assigned;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // POST: api/Appointment/StartService/5
+        [HttpPost("StartService/{id}")]
+        [Authorize(Roles = "Manicurista")]
+        public async Task<IActionResult> StartService(int id)
+        {
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            if (appointment.Status != AppointmentStatus.Assigned)
+            {
+                return BadRequest("Service can only be started when appointment is assigned");
+            }
+
+            appointment.Status = AppointmentStatus.InProgress;
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // POST: api/Appointment/FinishService/5
+        [HttpPost("FinishService/{id}")]
+        [Authorize(Roles = "Manicurista")]
+        public async Task<IActionResult> FinishService(int id)
+        {
+            var appointment = await _context.Appointments.FindAsync(id);
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            if (appointment.Status != AppointmentStatus.InProgress)
+            {
+                return BadRequest("Service can only be finished when in progress");
+            }
+
+            appointment.Status = AppointmentStatus.CompletedPendingPayment;
             await _context.SaveChangesAsync();
 
             return NoContent();

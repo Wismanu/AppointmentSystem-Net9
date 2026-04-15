@@ -46,10 +46,17 @@ namespace NailsFlow.Api.Controllers
                 user = new
                 {
                     id = user.UsrId,
+                    usrId = user.UsrId,
                     username = user.UsrName,
+                    name = user.Person?.PerFirstName,
                     phone = user.Person?.PerPhone,
-                    // Extraemos los nombres de los roles para que React sepa el rol
-                    roles = user.UserRoles.Select(ur => ur.Rol?.RolName).ToList()
+                    email = user.Person?.PerEmail,
+                    // Devolvemos los roles completos con id y nombre
+                    roles = user.UserRoles.Select(ur => new 
+                    {
+                        rolId = ur.RolId,
+                        rolName = ur.Rol?.RolName
+                    }).ToList()
                 }
             });
         }
@@ -107,9 +114,16 @@ namespace NailsFlow.Api.Controllers
             return Ok(new
             {
                 id = user.UsrId,
+                usrId = user.UsrId,
                 username = user.UsrName,
+                name = user.Person?.PerFirstName,
                 phone = user.Person?.PerPhone,
-                roles = user.UserRoles.Select(ur => ur.Rol?.RolName).ToList()
+                email = user.Person?.PerEmail,
+                roles = user.UserRoles.Select(ur => new 
+                {
+                    rolId = ur.RolId,
+                    rolName = ur.Rol?.RolName
+                }).ToList()
             });
         }
 

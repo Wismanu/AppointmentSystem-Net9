@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NailsFlow.Api.Data;
@@ -49,8 +50,11 @@ namespace NailsFlow.Api.Controllers
 
         // POST: api/Payment
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<Payment>> PostPayment(Payment payment)
         {
+            // Initialize payment as not approved
+            payment.IsApproved = false;
             _context.Payments.Add(payment);
             await _context.SaveChangesAsync();
 
@@ -98,6 +102,23 @@ namespace NailsFlow.Api.Controllers
             }
 
             _context.Payments.Remove(payment);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // POST: api/Payment/Approve/5
+        [HttpPost("Approve/{id}")]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> ApprovePayment(int id)
+        {
+            var payment = await _context.Payments.FindAsync(id);
+            if (payment == null)
+            {
+                return NotFound();
+            }
+
+            payment.IsApproved = true;
             await _context.SaveChangesAsync();
 
             return NoContent();
